@@ -14,9 +14,11 @@ L.Icon.Default.mergeOptions({
 
 interface LocationSelectorProps {
   onLocationSelect: (location: Location) => void;
-  onDateSelect: (date: string) => void;
+  onStartDateSelect: (date: string) => void;
+  onEndDateSelect: (date: string) => void;
   selectedLocation?: Location;
-  selectedDate?: string;
+  startDate?: string;
+  endDate?: string;
   onMapFixedChange?: (isFixed: boolean) => void;
 }
 
@@ -33,9 +35,11 @@ const MapClickHandler: React.FC<{ onLocationSelect: (location: Location) => void
 
 const LocationSelector: React.FC<LocationSelectorProps> = ({
   onLocationSelect,
-  onDateSelect,
+  onStartDateSelect,
+  onEndDateSelect,
   selectedLocation,
-  selectedDate,
+  startDate,
+  endDate,
   onMapFixedChange,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,9 +97,14 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     }
   };
 
-  // 處理日期變更
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onDateSelect(e.target.value);
+  // 處理開始日期變更
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onStartDateSelect(e.target.value);
+  };
+
+  // 處理結束日期變更
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onEndDateSelect(e.target.value);
   };
 
   // 重置地圖位置
@@ -158,28 +167,51 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           </div>
           <div className="flex flex-col lg:flex-row items-center gap-3">
             <div>
-              <label htmlFor="date-picker" className="block text-sm font-medium text-gray-700 mb-2">
-                分析日期
+              <label htmlFor="start-date-picker" className="block text-sm font-medium text-gray-700 mb-2">
+                開始日期
               </label>
               <input
-                id="date-picker"
+                id="start-date-picker"
                 type="date"
-                value={selectedDate || ''}
-                onChange={handleDateChange}
+                value={startDate || ''}
+                onChange={handleStartDateChange}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label htmlFor="end-date-picker" className="block text-sm font-medium text-gray-700 mb-2">
+                結束日期
+              </label>
+              <input
+                id="end-date-picker"
+                type="date"
+                value={endDate || ''}
+                onChange={handleEndDateChange}
+                min={startDate}
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
         </div>
         
-        {/* 選中的位置資訊 */}
+        {/* 選中的位置和日期資訊 */}
         {selectedLocation && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2">
-              <span className="text-blue-600">📍</span>
-              <span className="text-sm font-medium text-blue-800">
-                已選擇位置: 緯度 {selectedLocation.lat.toFixed(4)}, 經度 {selectedLocation.lon.toFixed(4)}
-              </span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-600">📍</span>
+                <span className="text-sm font-medium text-blue-800">
+                  已選擇位置: 緯度 {selectedLocation.lat.toFixed(4)}, 經度 {selectedLocation.lon.toFixed(4)}
+                </span>
+              </div>
+              {startDate && (
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-600">📅</span>
+                  <span className="text-sm font-medium text-blue-800">
+                    分析期間: {startDate} {endDate && endDate !== startDate ? `至 ${endDate}` : ''}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -250,8 +282,9 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• 在地圖上點擊任意位置來選擇分析地點</li>
                 <li>• 使用搜尋框輸入城市名稱或地址進行快速定位</li>
-                <li>• 選擇您想要分析的日期</li>
-                <li>• 選擇完成後，系統將自動載入該地點的歷史天氣數據</li>
+                <li>• 選擇您想要分析的日期範圍（開始日期和結束日期）</li>
+                <li>• 如果只選擇開始日期，將分析單日數據</li>
+                <li>• 選擇完成後，系統將自動載入該地點的歷史同期天氣數據</li>
               </ul>
             </div>
           </div>

@@ -13,7 +13,17 @@ export interface LocationInfo {
 
 // 天氣數據摘要類型
 export interface WeatherSummary {
+  avgTemperature: {
+    avgValue: number;
+    unit: string;
+    description: string;
+  };
   maxTemperature: {
+    avgValue: number;
+    unit: string;
+    description: string;
+  };
+  minTemperature: {
     avgValue: number;
     unit: string;
     description: string;
@@ -28,14 +38,29 @@ export interface WeatherSummary {
     unit: string;
     description: string;
   };
+  humidity: {
+    avgValue: number;
+    unit: string;
+    description: string;
+  };
+  weatherType: {
+    type: string;
+    heatIndex: number;
+    unit: string;
+    description: string;
+  };
 }
 
 // 歷史趨勢數據類型
 export interface TrendDataPoint {
   year: number;
+  avgTemperature: number;
   maxTemperature: number;
+  minTemperature: number;
   precipitation: number;
   windSpeed: number;
+  humidity: number;
+  weatherType: string;
 }
 
 // API 回應類型
@@ -43,6 +68,21 @@ export interface WeatherApiResponse {
   location: LocationInfo;
   summary: WeatherSummary;
   trendData: TrendDataPoint[];
+}
+
+// API 錯誤類型
+export interface ApiError {
+  error: string;
+  message: string;
+  timestamp: string;
+}
+
+// 天氣分析請求參數
+export interface WeatherAnalysisParams {
+  lat: number;
+  lon: number;
+  date: string; // YYYYMMDD 格式
+  years?: number; // 可選，預設 5
 }
 
 // 概率卡片屬性類型

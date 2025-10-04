@@ -2,20 +2,38 @@ import React, { useState, useEffect } from 'react';
 import LocationSelector from './components/LocationSelector';
 import AnalysisDashboard from './components/AnalysisDashboard';
 import type { Location, WeatherApiResponse } from './types';
-import { fetchWeatherData } from './data/mockData';
+import { fetchWeatherData, weatherApi } from './services/api';
 
 const App: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [weatherData, setWeatherData] = useState<WeatherApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMapFixed, setIsMapFixed] = useState(false);
+  const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
 
   // 設置默認日期為今天
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
-    setSelectedDate(today);
+    setStartDate(today);
+    setEndDate(today);
+  }, []);
+
+  // 檢查 API 連接狀態
+  useEffect(() => {
+    const checkApiStatus = async () => {
+      try {
+        await weatherApi.checkHealth();
+        setApiStatus('connected');
+      } catch (error) {
+        setApiStatus('error');
+        console.error('API connection failed:', error);
+      }
+    };
+
+    checkApiStatus();
   }, []);
 
   // 處理位置選擇
@@ -24,9 +42,15 @@ const App: React.FC = () => {
     setError(null);
   };
 
-  // 處理日期選擇
-  const handleDateSelect = (date: string) => {
-    setSelectedDate(date);
+  // 處理開始日期選擇
+  const handleStartDateSelect = (date: string) => {
+    setStartDate(date);
+    setError(null);
+  };
+
+  // 處理結束日期選擇
+  const handleEndDateSelect = (date: string) => {
+    setEndDate(date);
     setError(null);
   };
 
@@ -37,8 +61,14 @@ const App: React.FC = () => {
 
   // 獲取天氣數據
   const fetchData = async () => {
-    if (!selectedLocation || !selectedDate) {
-      setError('請選擇地點和日期');
+    if (!selectedLocation || !startDate) {
+      setError('請選擇地點和開始日期');
+      return;
+    }
+
+    // 驗證日期範圍
+    if (endDate && new Date(startDate) > new Date(endDate)) {
+      setError('開始日期不能晚於結束日期');
       return;
     }
 
@@ -46,10 +76,27 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      const data = await fetchWeatherData(selectedLocation, selectedDate);
+      const data = await fetchWeatherData(selectedLocation, startDate, endDate || undefined);
       setWeatherData(data);
     } catch (err) {
-      setError('獲取天氣數據時發生錯誤，請稍後再試');
+      let errorMessage = '獲取天氣數據時發生錯誤，請稍後再試';
+      
+      if (err instanceof Error) {
+        // 檢查是否為 API 錯誤
+        if ((err as any).status === 400) {
+          errorMessage = '請求參數錯誤，請檢查位置和日期';
+        } else if ((err as any).status === 422) {
+          errorMessage = '數據驗證錯誤，請檢查輸入格式';
+        } else if ((err as any).status === 500) {
+          errorMessage = '服務器內部錯誤，請稍後再試';
+        } else if ((err as any).status === 502) {
+          errorMessage = 'NASA Power API 服務暫時不可用';
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+      }
+      
+      setError(errorMessage);
       console.error('Error fetching weather data:', err);
     } finally {
       setLoading(false);
@@ -58,10 +105,10 @@ const App: React.FC = () => {
 
   // 當位置或日期改變時自動獲取數據
   useEffect(() => {
-    if (selectedLocation && selectedDate) {
+    if (selectedLocation && startDate) {
       fetchData();
     }
-  }, [selectedLocation, selectedDate]);
+  }, [selectedLocation, startDate, endDate]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -83,9 +130,11 @@ const App: React.FC = () => {
         <div className="py-8">
           <LocationSelector
             onLocationSelect={handleLocationSelect}
-            onDateSelect={handleDateSelect}
+            onStartDateSelect={handleStartDateSelect}
+            onEndDateSelect={handleEndDateSelect}
             selectedLocation={selectedLocation || undefined}
-            selectedDate={selectedDate}
+            startDate={startDate}
+            endDate={endDate}
             onMapFixedChange={handleMapFixedChange}
           />
         </div>
@@ -95,7 +144,38 @@ const App: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-8 flex items-center gap-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <span className="text-lg font-medium">正在分析天氣數據...</span>
+              <div className="flex flex-col">
+                <span className="text-lg font-medium">正在分析天氣數據...</span>
+                <span className="text-sm text-gray-500">從 NASA Power API 獲取歷史數據</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* API 狀態指示器 */}
+        {apiStatus === 'checking' && (
+          <div className="fixed top-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span>檢查 API 連接...</span>
+            </div>
+          </div>
+        )}
+
+        {apiStatus === 'error' && (
+          <div className="fixed top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+            <div className="flex items-center gap-2">
+              <span>⚠️</span>
+              <span>API 連接失敗，請檢查後端服務</span>
+            </div>
+          </div>
+        )}
+
+        {apiStatus === 'connected' && (
+          <div className="fixed top-4 left-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+            <div className="flex items-center gap-2">
+              <span>✅</span>
+              <span>API 連接正常</span>
             </div>
           </div>
         )}
@@ -136,7 +216,7 @@ const App: React.FC = () => {
         )}
 
         {/* 空狀態提示 */}
-        {!weatherData && !loading && selectedLocation && selectedDate && (
+        {!weatherData && !loading && selectedLocation && startDate && (
           <div className="max-w-7xl mx-auto px-6 pb-8">
             <div className="bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg">
               <div className="flex items-center gap-2">

@@ -1,6 +1,7 @@
 import React from 'react';
 import ProbabilityCard from './ProbabilityCard';
 import TrendChart from './TrendChart';
+import WeatherTypeCard from './WeatherTypeCard';
 import type { WeatherApiResponse } from '../types';
 
 interface AnalysisDashboardProps {
@@ -22,13 +23,24 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
         </p>
       </div>
 
+      {/* 天氣類型卡片 */}
+      <div className="mb-8">
+        <WeatherTypeCard weatherSummary={summary} />
+      </div>
+
       {/* 概率卡片區域 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <ProbabilityCard
+          title="平均溫度"
+          value={`${summary.avgTemperature.avgValue}${summary.avgTemperature.unit}`}
+          probability={`${Math.round((summary.avgTemperature.avgValue / 40) * 100)}% 機率`}
+          icon="🌡️"
+        />
         <ProbabilityCard
           title="最高溫度"
           value={`${summary.maxTemperature.avgValue}${summary.maxTemperature.unit}`}
           probability={`${Math.round((summary.maxTemperature.avgValue / 40) * 100)}% 機率`}
-          icon="🌡️"
+          icon="🔥"
         />
         <ProbabilityCard
           title="降雨機率"
@@ -41,6 +53,22 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
           value={`${summary.windSpeed.avgValue}${summary.windSpeed.unit}`}
           probability={`${Math.round((summary.windSpeed.avgValue / 30) * 100)}% 機率`}
           icon="💨"
+        />
+      </div>
+
+      {/* 額外數據卡片 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <ProbabilityCard
+          title="最低溫度"
+          value={`${summary.minTemperature.avgValue}${summary.minTemperature.unit}`}
+          probability={`${Math.round((summary.minTemperature.avgValue / 30) * 100)}% 機率`}
+          icon="❄️"
+        />
+        <ProbabilityCard
+          title="相對濕度"
+          value={`${summary.humidity.avgValue}${summary.humidity.unit}`}
+          probability={`${Math.round((summary.humidity.avgValue / 100) * 100)}% 機率`}
+          icon="💧"
         />
       </div>
 
@@ -70,7 +98,13 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
               <span className="font-medium">{trendData.length} 個年份</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">溫度範圍:</span>
+              <span className="text-gray-600">平均溫度範圍:</span>
+              <span className="font-medium">
+                {Math.min(...trendData.map(d => d.avgTemperature)).toFixed(1)}°C - {Math.max(...trendData.map(d => d.avgTemperature)).toFixed(1)}°C
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">最高溫度範圍:</span>
               <span className="font-medium">
                 {Math.min(...trendData.map(d => d.maxTemperature)).toFixed(1)}°C - {Math.max(...trendData.map(d => d.maxTemperature)).toFixed(1)}°C
               </span>
@@ -79,6 +113,12 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
               <span className="text-gray-600">風速範圍:</span>
               <span className="font-medium">
                 {Math.min(...trendData.map(d => d.windSpeed)).toFixed(1)} - {Math.max(...trendData.map(d => d.windSpeed)).toFixed(1)} km/h
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">濕度範圍:</span>
+              <span className="font-medium">
+                {Math.min(...trendData.map(d => d.humidity)).toFixed(1)}% - {Math.max(...trendData.map(d => d.humidity)).toFixed(1)}%
               </span>
             </div>
           </div>
@@ -122,6 +162,30 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
                 風速風險: {
                   summary.windSpeed.avgValue > 25 ? '高' : 
                   summary.windSpeed.avgValue > 15 ? '中' : '低'
+                }
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${
+                summary.humidity.avgValue > 85 ? 'bg-red-500' : 
+                summary.humidity.avgValue > 70 ? 'bg-yellow-500' : 'bg-green-500'
+              }`}></div>
+              <span className="text-sm">
+                濕度風險: {
+                  summary.humidity.avgValue > 85 ? '高' : 
+                  summary.humidity.avgValue > 70 ? '中' : '低'
+                }
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${
+                summary.weatherType.type === '炎熱' || summary.weatherType.type === '悶熱' ? 'bg-red-500' : 
+                summary.weatherType.type === '潮濕' || summary.weatherType.type === '強風' ? 'bg-yellow-500' : 'bg-green-500'
+              }`}></div>
+              <span className="text-sm">
+                舒適度風險: {
+                  summary.weatherType.type === '炎熱' || summary.weatherType.type === '悶熱' ? '高' : 
+                  summary.weatherType.type === '潮濕' || summary.weatherType.type === '強風' ? '中' : '低'
                 }
               </span>
             </div>
