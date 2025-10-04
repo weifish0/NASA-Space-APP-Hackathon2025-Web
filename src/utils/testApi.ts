@@ -18,7 +18,7 @@ export const testApiConnection = async () => {
     const weatherData = await weatherApi.getWeatherAnalysis({
       lat: 25.0330,
       lon: 121.5654,
-      date: '20240115',
+      start_date: '20240115',
       years: 3
     });
     console.log('✅ 天氣分析測試通過:', weatherData);
@@ -31,7 +31,7 @@ export const testApiConnection = async () => {
 };
 
 // 在開發環境中自動運行測試
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   // 延遲 2 秒後運行測試，確保應用程式已載入
   setTimeout(() => {
     testApiConnection();

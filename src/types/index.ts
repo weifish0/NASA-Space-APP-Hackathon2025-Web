@@ -81,7 +81,8 @@ export interface ApiError {
 export interface WeatherAnalysisParams {
   lat: number;
   lon: number;
-  date: string; // YYYYMMDD 格式
+  start_date: string; // YYYYMMDD 格式
+  end_date?: string; // YYYYMMDD 格式，可選，預設與start_date相同
   years?: number; // 可選，預設 5
 }
 

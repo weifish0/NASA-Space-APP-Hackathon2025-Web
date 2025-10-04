@@ -3,6 +3,7 @@ import LocationSelector from './components/LocationSelector';
 import AnalysisDashboard from './components/AnalysisDashboard';
 import type { Location, WeatherApiResponse } from './types';
 import { fetchWeatherData, weatherApi } from './services/api';
+import './utils/browserTest'; // 導入瀏覽器兼容性測試
 
 const App: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);

@@ -1,7 +1,10 @@
 import type { WeatherApiResponse, Location } from '../types';
+import { BrowserCompatibility } from '../utils/browserCompatibility';
 
 // API 基礎配置
-const API_BASE_URL = 'http://0.0.0.0:8000';
+const API_BASE_URL = import.meta.env.PROD 
+  ? 'https://your-production-api.com' 
+  : 'http://localhost:8000';
 
 // API 錯誤類型
 export interface ApiError {
@@ -39,14 +42,20 @@ const handleApiResponse = async (response: Response): Promise<any> => {
     try {
       const errorData: ApiError = await response.json();
       errorMessage = errorData.message || errorData.error || errorMessage;
-    } catch {
+    } catch (parseError) {
       // 如果無法解析錯誤 JSON，使用預設錯誤訊息
+      console.warn('無法解析錯誤回應:', parseError);
     }
     
     throw createApiError(errorMessage, response.status);
   }
   
-  return response.json();
+  try {
+    return await response.json();
+  } catch (parseError) {
+    console.error('無法解析 API 回應:', parseError);
+    throw createApiError('API 回應格式錯誤');
+  }
 };
 
 // API 服務類
@@ -60,21 +69,50 @@ export class WeatherApiService {
   // 檢查 API 服務狀態
   async checkHealth(): Promise<{ status: string; message: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/`);
+      const controller = BrowserCompatibility.supportsAbortController() ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 10000) : null; // 10秒超時
+      
+      const response = await BrowserCompatibility.createFetchRequest(`${this.baseUrl}/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller?.signal,
+      });
+      
+      if (timeoutId) clearTimeout(timeoutId);
       return await handleApiResponse(response);
     } catch (error) {
-      throw createApiError('無法連接到 API 服務');
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw createApiError('API 請求超時，請檢查網路連接');
+      }
+      throw createApiError('無法連接到 API 服務，請檢查後端是否運行');
     }
   }
 
   // 測試 NASA Power API 連接
   async testNasaApi(lat: number = 25.0330, lon: number = 121.5654): Promise<any> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/api/v1/test-nasa?lat=${lat}&lon=${lon}`
+      const controller = BrowserCompatibility.supportsAbortController() ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 15000) : null; // 15秒超時
+      
+      const response = await BrowserCompatibility.createFetchRequest(
+        `${this.baseUrl}/api/v1/test-nasa?lat=${lat}&lon=${lon}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller?.signal,
+        }
       );
+      
+      if (timeoutId) clearTimeout(timeoutId);
       return await handleApiResponse(response);
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw createApiError('NASA Power API 請求超時');
+      }
       throw createApiError('NASA Power API 測試失敗');
     }
   }
@@ -112,6 +150,9 @@ export class WeatherApiService {
     }
 
     try {
+      const controller = BrowserCompatibility.supportsAbortController() ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 30000) : null; // 30秒超時
+      
       const url = new URL(`${this.baseUrl}/api/v1/weather/analysis`);
       url.searchParams.append('lat', lat.toString());
       url.searchParams.append('lon', lon.toString());
@@ -121,9 +162,20 @@ export class WeatherApiService {
       }
       url.searchParams.append('years', years.toString());
 
-      const response = await fetch(url.toString());
+      const response = await BrowserCompatibility.createFetchRequest(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller?.signal,
+      });
+      
+      if (timeoutId) clearTimeout(timeoutId);
       return await handleApiResponse(response);
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw createApiError('天氣分析請求超時，請稍後再試');
+      }
       if (error instanceof Error && (error as any).status) {
         throw error; // 重新拋出 API 錯誤
       }
