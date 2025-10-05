@@ -107,7 +107,7 @@ export const fetchWeatherData = async (location: { lat: number; lon: number }, d
   else if (minTemp < 10) weatherType = "寒冷";
   else if (precip > 5 || humidity > 80) weatherType = "潮濕";
   else if (windSpeed > 20) weatherType = "強風";
-  else if (25 <= avgTemp <= 30 && humidity > 70) weatherType = "悶熱";
+  else if (avgTemp >= 25 && avgTemp <= 30 && humidity > 70) weatherType = "悶熱";
   
   baseData.summary.weatherType.type = weatherType;
   baseData.summary.weatherType.heatIndex = Math.round((avgTemp + humidity * 0.1) * 10) / 10;
