@@ -1,4 +1,4 @@
-// API 連接測試工具
+// API connection testing tool
 import { weatherApi } from '../services/api';
 
 export const testApiConnection = async (): Promise<{
@@ -6,32 +6,32 @@ export const testApiConnection = async (): Promise<{
   message: string;
   details: any;
 }> => {
-  console.log('🔍 開始 API 連接測試...');
+  console.log('🔍 Starting API connection test...');
   
   try {
-    // 測試健康檢查
-    console.log('1️⃣ 測試 API 健康檢查...');
+    // Test health check
+    console.log('1️⃣ Testing API health check...');
     const health = await weatherApi.checkHealth();
-    console.log('✅ API 健康檢查通過:', health);
+    console.log('✅ API health check passed:', health);
     
-    // 測試 NASA Power API
-    console.log('2️⃣ 測試 NASA Power API...');
+    // Test NASA Power API
+    console.log('2️⃣ Testing NASA Power API...');
     const nasaTest = await weatherApi.testNasaApi();
-    console.log('✅ NASA Power API 測試通過:', nasaTest);
+    console.log('✅ NASA Power API test passed:', nasaTest);
     
-    // 測試天氣分析（使用台北市作為測試）
-    console.log('3️⃣ 測試天氣分析...');
+    // Test weather analysis (using Taipei as test)
+    console.log('3️⃣ Testing weather analysis...');
     const weatherData = await weatherApi.getWeatherAnalysis({
       lat: 25.0330,
       lon: 121.5654,
       start_date: '20240115',
       years: 3
     });
-    console.log('✅ 天氣分析測試通過:', weatherData);
+    console.log('✅ Weather analysis test passed:', weatherData);
     
     return {
       success: true,
-      message: '所有 API 測試通過',
+      message: 'All API tests passed',
       details: {
         health,
         nasaTest,
@@ -43,17 +43,17 @@ export const testApiConnection = async (): Promise<{
       }
     };
   } catch (error) {
-    console.error('❌ API 測試失敗:', error);
+    console.error('❌ API test failed:', error);
     return {
       success: false,
-      message: `API 測試失敗: ${error instanceof Error ? error.message : '未知錯誤'}`,
+      message: `API test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       details: { error }
     };
   }
 };
 
-// 在開發環境中自動運行測試
-if (import.meta.env.DEV) {
+// Automatically run tests in development environment (disabled to reduce load)
+if (import.meta.env.DEV && false) { // Disabled to prevent API overload
   setTimeout(() => {
     testApiConnection();
   }, 2000);

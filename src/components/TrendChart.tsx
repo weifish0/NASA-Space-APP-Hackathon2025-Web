@@ -13,7 +13,7 @@ import {
 import { Line } from 'react-chartjs-2';
 import type { TrendDataPoint, ChartData } from '../types';
 
-// 註冊 Chart.js 組件
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -33,7 +33,7 @@ type ChartType = 'temperature' | 'precipitation' | 'wind';
 const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
   const [selectedChart, setSelectedChart] = useState<ChartType>('temperature');
 
-  // 生成圖表數據
+  // Generate chart data
   const chartData: ChartData = useMemo(() => {
     const labels = data.map(item => item.year.toString());
     
@@ -45,25 +45,25 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
     switch (selectedChart) {
       case 'temperature':
         dataset = data.map(item => item.maxTemperature);
-        label = '最高溫度 (°C)';
+        label = 'Maximum Temperature (°C)';
         borderColor = 'rgb(239, 68, 68)';
         backgroundColor = 'rgba(239, 68, 68, 0.1)';
         break;
       case 'precipitation':
         dataset = data.map(item => item.precipitation);
-        label = '降雨量 (mm)';
+        label = 'Precipitation (mm)';
         borderColor = 'rgb(59, 130, 246)';
         backgroundColor = 'rgba(59, 130, 246, 0.1)';
         break;
       case 'wind':
         dataset = data.map(item => item.windSpeed);
-        label = '平均風速 (km/h)';
+        label = 'Average Wind Speed (km/h)';
         borderColor = 'rgb(34, 197, 94)';
         backgroundColor = 'rgba(34, 197, 94, 0.1)';
         break;
       default:
         dataset = data.map(item => item.maxTemperature);
-        label = '最高溫度 (°C)';
+        label = 'Maximum Temperature (°C)';
         borderColor = 'rgb(239, 68, 68)';
         backgroundColor = 'rgba(239, 68, 68, 0.1)';
     }
@@ -87,7 +87,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
     };
   }, [data, selectedChart]);
 
-  // 圖表選項
+  // Chart options
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -97,7 +97,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
       },
       title: {
         display: true,
-        text: `過去${data.length}年${getChartTitle(selectedChart)}趨勢`,
+        text: `Past ${data.length} years ${getChartTitle(selectedChart)} trend`,
         font: {
           size: 16,
           weight: 'bold' as const,
@@ -118,7 +118,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
         display: true,
         title: {
           display: true,
-          text: '年份',
+          text: 'Year',
         },
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
@@ -142,14 +142,14 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
     },
   };
 
-  // 下載 CSV 功能
+  // Download CSV functionality
   const downloadCSV = () => {
     const csvContent = generateCSV(data, selectedChart);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `${getChartTitle(selectedChart)}_趨勢數據.csv`);
+    link.setAttribute('download', `${getChartTitle(selectedChart)}_trend_data.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -158,7 +158,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      {/* 圖表類型選擇器 */}
+      {/* Chart type selector */}
       <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setSelectedChart('temperature')}
@@ -168,7 +168,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          🌡️ 溫度趨勢
+          🌡️ Temperature Trend
         </button>
         <button
           onClick={() => setSelectedChart('precipitation')}
@@ -178,7 +178,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          🌧️ 降雨趨勢
+          🌧️ Precipitation Trend
         </button>
         <button
           onClick={() => setSelectedChart('wind')}
@@ -188,57 +188,57 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          💨 風速趨勢
+          💨 Wind Speed Trend
         </button>
       </div>
 
-      {/* 圖表容器 */}
+      {/* Chart container */}
       <div className="relative h-96 mb-4">
         <Line data={chartData} options={options} />
       </div>
 
-      {/* 下載按鈕 */}
+      {/* Download button */}
       <div className="flex justify-end">
         <button
           onClick={downloadCSV}
           className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
         >
-          📥 下載 CSV
+          📥 Download CSV
         </button>
       </div>
     </div>
   );
 };
 
-// 輔助函數
+// Helper functions
 const getChartTitle = (type: ChartType): string => {
   switch (type) {
     case 'temperature':
-      return '溫度';
+      return 'Temperature';
     case 'precipitation':
-      return '降雨';
+      return 'Precipitation';
     case 'wind':
-      return '風速';
+      return 'Wind Speed';
     default:
-      return '溫度';
+      return 'Temperature';
   }
 };
 
 const getYAxisLabel = (type: ChartType): string => {
   switch (type) {
     case 'temperature':
-      return '溫度 (°C)';
+      return 'Temperature (°C)';
     case 'precipitation':
-      return '降雨量 (mm)';
+      return 'Precipitation (mm)';
     case 'wind':
-      return '風速 (km/h)';
+      return 'Wind Speed (km/h)';
     default:
-      return '溫度 (°C)';
+      return 'Temperature (°C)';
   }
 };
 
 const generateCSV = (data: TrendDataPoint[], type: ChartType): string => {
-  const headers = ['年份', getYAxisLabel(type)];
+  const headers = ['Year', getYAxisLabel(type)];
   const rows = data.map(item => {
     let value;
     switch (type) {
