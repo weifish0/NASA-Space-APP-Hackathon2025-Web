@@ -7,23 +7,20 @@ const ProbabilityCard: React.FC<ProbabilityCardProps> = ({ title, value, probabi
   const probValue = parseInt(probability.replace('%', '')) || 0;
 
   return (
-    <GlassCard className="p-4">
-      {/* Title + Icon */}
+    <GlassCard className="p-4 bg-white/20 backdrop-blur-2xl border border-white/40 text-yellow-50 shadow-[0_4px_30px_rgba(255,255,255,0.2)] hover:bg-white/30 transition-all">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-        <div className="text-3xl drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">{icon}</div>
+        <h3 className="text-lg font-semibold text-yellow-100 drop-shadow-[0_0_5px_rgba(255,255,200,0.6)]">{title}</h3>
+        <div className="text-3xl">{icon}</div>
       </div>
 
-      {/* Value + Probability */}
       <div className="space-y-2">
-        <div className="text-3xl font-bold text-gray-900">{value}</div>
-        <div className="text-lg font-semibold text-gray-600">{probability}</div>
+        <div className="text-3xl font-bold text-yellow-50">{value}</div>
+        <div className="text-lg font-semibold text-yellow-200/80">{probability}</div>
       </div>
 
-      {/* Progress bar */}
-      <div className="mt-4 bg-gray-200/60 rounded-full h-2">
+      <div className="mt-4 bg-yellow-100/20 rounded-full h-2 overflow-hidden">
         <div
-          className="h-2 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500"
+          className="h-2 bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 rounded-full shadow-[0_0_8px_rgba(255,255,200,0.6)] transition-all duration-500"
           style={{ width: `${probValue}%` }}
         ></div>
       </div>

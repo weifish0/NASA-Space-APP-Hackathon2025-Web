@@ -59,14 +59,17 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
         {
           label,
           data: dataset,
-          borderColor,
+          borderColor: 'rgba(255,200,80,0.9)',
           backgroundColor,
           tension: 0.35,
-          pointBackgroundColor: borderColor,
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6,
+          pointBackgroundColor: 'rgba(255,255,255,0.9)',
+          pointBorderColor: borderColor,
+          pointBorderWidth: 3,
+          pointRadius: 7, // 🔹 點變大
+          pointHoverRadius: 9, // 🔹 滑過更大
+          borderWidth: 2.5,
+          borderDash: [8, 6], // 🔹 虛線樣式（線長8px，間距6px）
+          borderCapStyle: 'round', // 線端圓滑
         },
       ],
     };
@@ -128,48 +131,42 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
   };
 
   return (
-    <GlassCard className="p-6 text-gray-800">
-      {/* Header */}
-      <h3 className="text-xl font-bold mb-4 text-gray-900 drop-shadow-[0_1px_2px_rgba(255,255,255,0.7)]">
-        Historical Trend Analysis
-      </h3>
+    <GlassCard className="p-6 bg-white/15 backdrop-blur-2xl border border-white/30 shadow-[0_8px_30px_rgba(255,255,255,0.2)] text-yellow-50">
+        <h3 className="text-xl font-bold mb-4 drop-shadow-[0_0_6px_rgba(255,255,200,0.7)]">Historical Trend Analysis</h3>
 
-      {/* Chart Type Selector */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {[
-          { type: 'temperature', label: '🌡️ Temperature', color: 'red' },
-          { type: 'precipitation', label: '🌧️ Precipitation', color: 'blue' },
-          { type: 'wind', label: '💨 Wind Speed', color: 'green' },
-        ].map((btn) => (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {[
+            { type: 'temperature', label: '🌡️ Temperature', color: 'from-red-400 to-red-600' },
+            { type: 'precipitation', label: '🌧️ Precipitation', color: 'from-blue-400 to-blue-600' },
+            { type: 'wind', label: '💨 Wind Speed', color: 'from-green-400 to-green-600' },
+          ].map((btn) => (
+            <button
+              key={btn.type}
+              onClick={() => setSelectedChart(btn.type as ChartType)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                selectedChart === btn.type
+                  ? `bg-gradient-to-r ${btn.color} text-white shadow-lg`
+                  : 'bg-white/20 text-yellow-50 hover:bg-white/30'
+              }`}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative h-96 mb-4">
+          <Line data={chartData} options={options} />
+        </div>
+
+        <div className="flex justify-end">
           <button
-            key={btn.type}
-            onClick={() => setSelectedChart(btn.type as ChartType)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              selectedChart === btn.type
-                ? `bg-${btn.color}-500 text-white shadow-lg shadow-${btn.color}-300/40`
-                : 'bg-white/20 text-gray-900 hover:bg-white/40'
-            }`}
+            onClick={downloadCSV}
+            className="px-6 py-2 bg-yellow-400/80 text-black font-semibold rounded-lg hover:bg-yellow-300 transition-all shadow-md shadow-yellow-200/40 flex items-center gap-2"
           >
-            {btn.label}
+            📥 Download CSV
           </button>
-        ))}
-      </div>
-
-      {/* Chart */}
-      <div className="relative h-96 mb-4">
-        <Line data={chartData} options={options} />
-      </div>
-
-      {/* Download Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={downloadCSV}
-          className="px-6 py-2 bg-blue-500/80 text-white rounded-lg hover:bg-blue-600 transition-all shadow-md shadow-blue-300/40 flex items-center gap-2"
-        >
-          📥 Download CSV
-        </button>
-      </div>
-    </GlassCard>
+        </div>
+      </GlassCard>
   );
 };
 

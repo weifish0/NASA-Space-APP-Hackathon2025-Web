@@ -149,7 +149,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main content area */}
-      <main className={`relative min-h-screen ${isMapFixed ? 'pb-96' : ''}`}>
+      <main className={`relative min-h-screen ${weatherData ? "overflow-hidden" : ""}`}>
         {/* Location selector */}
         <div className="py-8">
           <LocationSelector
@@ -230,25 +230,29 @@ const App: React.FC = () => {
 
         {/* Analysis dashboard */}
         {weatherData && !loading && (
-          <div className="fixed inset-0 z-40 overflow-y-auto">
-            <div className="relative">
-              {/* Close button */}
+          <AnimatePresence>
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="fixed inset-0 z-50 bg-black/90 backdrop-blur-lg overflow-y-auto"
+            >
+              {/* 關閉按鈕 */}
               <button
                 onClick={() => setWeatherData(null)}
-                className="fixed top-4 right-4 z-50 bg-gray-800/80 text-white p-2 rounded-full hover:bg-gray-700 transition-colors backdrop-blur"
-                title="Close analysis results"
+                className="absolute top-6 right-6 bg-yellow-300/20 border border-yellow-200/30 hover:bg-yellow-300/30 text-yellow-100 p-2 rounded-full z-50 transition-all"
               >
                 ✕
               </button>
-              
-              {/* Analysis results */}
-              <div className="p-4">
-                <div className="glass-card rounded-2xl">
-                  <AnalysisDashboard weatherData={weatherData} />
-                </div>
+
+              {/* Dashboard 內容 */}
+              <div className="relative z-40">
+                <AnalysisDashboard weatherData={weatherData} />
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </AnimatePresence>
         )}
 
         {/* Empty state prompt */}

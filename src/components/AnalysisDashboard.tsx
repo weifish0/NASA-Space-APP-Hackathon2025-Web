@@ -10,184 +10,140 @@ interface AnalysisDashboardProps {
 
 const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) => {
   const { summary, trendData } = weatherData;
+  const weatherType = summary.weatherType?.type || "Comfortable";
+
+  // ✅ 動態背景影片對應表
+  const weatherVideoMap: Record<string, string> = {
+    Hot: "/videos/weather/hot.mp4",
+    Cold: "/videos/weather/cold.mp4",
+    Humid: "/videos/weather/humid.mp4",
+    Windy: "/videos/weather/windy.mp4",
+    Muggy: "/videos/weather/muggy.mp4",
+    Comfortable: "/videos/weather/comfortable.mp4",
+  };
+
+  const videoSrc = weatherVideoMap[weatherType] || weatherVideoMap["Comfortable"];
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
-      {/* Title area */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          Weather Risk Analysis Report
-        </h2>
-        <p className="text-lg text-gray-600">
-          {weatherData.location.name} - Historical Weather Data Analysis
-        </p>
-      </div>
+    <div className="relative min-h-screen overflow-hidden text-yellow-50">
+  {/* 🎬 背景影片 */}
+  <video
+    key={videoSrc}
+    src={videoSrc}
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="absolute inset-0 w-full h-full object-cover z-0"
+  />
 
-      {/* Weather type card */}
-      <div className="mb-8">
-        <WeatherTypeCard weatherSummary={summary} />
-      </div>
+  {/* 🌫️ 亮色透明遮罩 */}
+  <div className="absolute inset-0 bg-white/10 backdrop-blur-2xl z-10" />
 
-      {/* Probability cards area */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <ProbabilityCard
-          title="Average Temperature"
-          value={`${summary.avgTemperature.avgValue}${summary.avgTemperature.unit}`}
-          probability={`${Math.round((summary.avgTemperature.avgValue / 40) * 100)}%`}
-          icon="🌡️"
-        />
-        <ProbabilityCard
-          title="Maximum Temperature"
-          value={`${summary.maxTemperature.avgValue}${summary.maxTemperature.unit}`}
-          probability={`${Math.round((summary.maxTemperature.avgValue / 40) * 100)}%`}
-          icon="🔥"
-        />
-        <ProbabilityCard
-          title="Precipitation Probability"
-          value={`${summary.precipitation.probability}${summary.precipitation.unit}`}
-          probability={`${summary.precipitation.probability}%`}
-          icon="🌧️"
-        />
-        <ProbabilityCard
-          title="Average Wind Speed"
-          value={`${summary.windSpeed.avgValue}${summary.windSpeed.unit}`}
-          probability={`${Math.round((summary.windSpeed.avgValue / 30) * 100)}%`}
-          icon="💨"
-        />
-      </div>
+  {/* 🌕 主內容 */}
+  <div className="relative z-20 w-full max-w-7xl mx-auto p-6 space-y-8">
+    <div className="text-center mb-8">
+      <h2 className="text-3xl font-bold text-yellow-100 mb-2 drop-shadow-[0_0_10px_rgba(255,255,180,0.8)]">
+        Weather Risk Analysis Report
+      </h2>
+      <p className="text-lg text-yellow-200/90">{weatherData.location.name} - Historical Weather Data Analysis</p>
+    </div>
 
-      {/* Additional data cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <ProbabilityCard
-          title="Minimum Temperature"
-          value={`${summary.minTemperature.avgValue}${summary.minTemperature.unit}`}
-          probability={`${Math.round((summary.minTemperature.avgValue / 30) * 100)}%`}
-          icon="❄️"
-        />
-        <ProbabilityCard
-          title="Relative Humidity"
-          value={`${summary.humidity.avgValue}${summary.humidity.unit}`}
-          probability={`${Math.round((summary.humidity.avgValue / 100) * 100)}%`}
-          icon="💧"
-        />
-      </div>
+    <WeatherTypeCard weatherSummary={summary} />
 
-      {/* Trend chart area */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          Historical Trend Analysis
-        </h3>
-        <TrendChart data={trendData} />
-      </div>
+    {/* 📊 各項卡片 */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <ProbabilityCard
+        title="Average Temperature"
+        value={`${summary.avgTemperature.avgValue}${summary.avgTemperature.unit}`}
+        probability={`${Math.round((summary.avgTemperature.avgValue / 40) * 100)}%`}
+        icon="🌡️"
+      />
+      <ProbabilityCard
+        title="Maximum Temperature"
+        value={`${summary.maxTemperature.avgValue}${summary.maxTemperature.unit}`}
+        probability={`${Math.round((summary.maxTemperature.avgValue / 40) * 100)}%`}
+        icon="🔥"
+      />
+      <ProbabilityCard
+        title="Precipitation Probability"
+        value={`${summary.precipitation.probability}${summary.precipitation.unit}`}
+        probability={`${summary.precipitation.probability}%`}
+        icon="🌧️"
+      />
+      <ProbabilityCard
+        title="Average Wind Speed"
+        value={`${summary.windSpeed.avgValue}${summary.windSpeed.unit}`}
+        probability={`${Math.round((summary.windSpeed.avgValue / 30) * 100)}%`}
+        icon="💨"
+      />
+    </div>
 
-      {/* Data summary area */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">
-            📊 Data Summary
-          </h4>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Analysis Period:</span>
-              <span className="font-medium">
-                {Math.min(...trendData.map(d => d.year))} - {Math.max(...trendData.map(d => d.year))}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Data Points:</span>
-              <span className="font-medium">{trendData.length} years</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Average Temperature Range:</span>
-              <span className="font-medium">
-                {Math.min(...trendData.map(d => d.avgTemperature)).toFixed(1)}°C - {Math.max(...trendData.map(d => d.avgTemperature)).toFixed(1)}°C
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Maximum Temperature Range:</span>
-              <span className="font-medium">
-                {Math.min(...trendData.map(d => d.maxTemperature)).toFixed(1)}°C - {Math.max(...trendData.map(d => d.maxTemperature)).toFixed(1)}°C
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Wind Speed Range:</span>
-              <span className="font-medium">
-                {Math.min(...trendData.map(d => d.windSpeed)).toFixed(1)} - {Math.max(...trendData.map(d => d.windSpeed)).toFixed(1)} km/h
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Humidity Range:</span>
-              <span className="font-medium">
-                {Math.min(...trendData.map(d => d.humidity)).toFixed(1)}% - {Math.max(...trendData.map(d => d.humidity)).toFixed(1)}%
-              </span>
+    {/* 趨勢圖表區 */}
+    <div className="bg-white/10 backdrop-blur-2xl border border-yellow-100/40 rounded-2xl p-6 shadow-[0_8px_30px_rgba(255,255,200,0.2)]">
+      <h3 className="text-xl font-semibold text-yellow-50 mb-4 drop-shadow-[0_0_6px_rgba(255,255,200,0.5)]">
+        Historical Trend Analysis
+      </h3>
+      <TrendChart data={trendData} />
+    </div>
+  
+
+        {/* Data summary area */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Data summary */}
+          <div className="bg-[#1a1a1a]/70 backdrop-blur-lg rounded-2xl p-6 border border-yellow-200/20 shadow-[0_8px_30px_rgba(255,255,150,0.1)]">
+            <h4 className="text-lg font-semibold text-yellow-100 mb-4">
+              📊 Data Summary
+            </h4>
+            <div className="space-y-3 text-yellow-200">
+              <div className="flex justify-between">
+                <span>Analysis Period:</span>
+                <span>
+                  {Math.min(...trendData.map(d => d.year))} - {Math.max(...trendData.map(d => d.year))}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Data Points:</span>
+                <span>{trendData.length} years</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Average Temperature Range:</span>
+                <span>
+                  {Math.min(...trendData.map(d => d.avgTemperature)).toFixed(1)}°C - {Math.max(...trendData.map(d => d.avgTemperature)).toFixed(1)}°C
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Maximum Temperature Range:</span>
+                <span>
+                  {Math.min(...trendData.map(d => d.maxTemperature)).toFixed(1)}°C - {Math.max(...trendData.map(d => d.maxTemperature)).toFixed(1)}°C
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Wind Speed Range:</span>
+                <span>
+                  {Math.min(...trendData.map(d => d.windSpeed)).toFixed(1)} - {Math.max(...trendData.map(d => d.windSpeed)).toFixed(1)} km/h
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Humidity Range:</span>
+                <span>
+                  {Math.min(...trendData.map(d => d.humidity)).toFixed(1)}% - {Math.max(...trendData.map(d => d.humidity)).toFixed(1)}%
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">
-            🔍 Risk Assessment
-          </h4>
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${
-                summary.maxTemperature.avgValue > 35 ? 'bg-red-500' : 
-                summary.maxTemperature.avgValue > 30 ? 'bg-yellow-500' : 'bg-green-500'
-              }`}></div>
-              <span className="text-sm">
-                High Temperature Risk: {
-                  summary.maxTemperature.avgValue > 35 ? 'High' : 
-                  summary.maxTemperature.avgValue > 30 ? 'Medium' : 'Low'
-                }
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${
-                summary.precipitation.probability > 70 ? 'bg-red-500' : 
-                summary.precipitation.probability > 40 ? 'bg-yellow-500' : 'bg-green-500'
-              }`}></div>
-              <span className="text-sm">
-                Precipitation Risk: {
-                  summary.precipitation.probability > 70 ? 'High' : 
-                  summary.precipitation.probability > 40 ? 'Medium' : 'Low'
-                }
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${
-                summary.windSpeed.avgValue > 25 ? 'bg-red-500' : 
-                summary.windSpeed.avgValue > 15 ? 'bg-yellow-500' : 'bg-green-500'
-              }`}></div>
-              <span className="text-sm">
-                Wind Speed Risk: {
-                  summary.windSpeed.avgValue > 25 ? 'High' : 
-                  summary.windSpeed.avgValue > 15 ? 'Medium' : 'Low'
-                }
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${
-                summary.humidity.avgValue > 85 ? 'bg-red-500' : 
-                summary.humidity.avgValue > 70 ? 'bg-yellow-500' : 'bg-green-500'
-              }`}></div>
-              <span className="text-sm">
-                Humidity Risk: {
-                  summary.humidity.avgValue > 85 ? 'High' : 
-                  summary.humidity.avgValue > 70 ? 'Medium' : 'Low'
-                }
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${
-                summary.weatherType.type === 'Hot' || summary.weatherType.type === 'Muggy' ? 'bg-red-500' : 
-                summary.weatherType.type === 'Humid' || summary.weatherType.type === 'Windy' ? 'bg-yellow-500' : 'bg-green-500'
-              }`}></div>
-              <span className="text-sm">
-                Comfort Risk: {
-                  summary.weatherType.type === 'Hot' || summary.weatherType.type === 'Muggy' ? 'High' : 
-                  summary.weatherType.type === 'Humid' || summary.weatherType.type === 'Windy' ? 'Medium' : 'Low'
-                }
-              </span>
+          {/* Risk Assessment */}
+          <div className="bg-[#1a1a1a]/70 backdrop-blur-lg rounded-2xl p-6 border border-yellow-200/20 shadow-[0_8px_30px_rgba(255,255,150,0.1)]">
+            <h4 className="text-lg font-semibold text-yellow-100 mb-4">
+              🔍 Risk Assessment
+            </h4>
+            <div className="space-y-3 text-yellow-200">
+              <RiskItem label="High Temperature" value={summary.maxTemperature.avgValue} high={35} medium={30} unit="°C" />
+              <RiskItem label="Precipitation" value={summary.precipitation.probability} high={70} medium={40} unit="%" />
+              <RiskItem label="Wind Speed" value={summary.windSpeed.avgValue} high={25} medium={15} unit="km/h" />
+              <RiskItem label="Humidity" value={summary.humidity.avgValue} high={85} medium={70} unit="%" />
+              <RiskItem label="Comfort Level" customType={summary.weatherType.type} />
             </div>
           </div>
         </div>
@@ -197,3 +153,48 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
 };
 
 export default AnalysisDashboard;
+
+// 🔧 小組件：風險顯示項
+const RiskItem = ({
+  label,
+  value,
+  high,
+  medium,
+  unit,
+  customType,
+}: {
+  label: string;
+  value?: number;
+  high?: number;
+  medium?: number;
+  unit?: string;
+  customType?: string;
+}) => {
+  let color = "bg-green-500";
+  let risk = "Low";
+
+  if (customType) {
+    if (["Hot", "Muggy"].includes(customType)) {
+      color = "bg-red-500";
+      risk = "High";
+    } else if (["Humid", "Windy"].includes(customType)) {
+      color = "bg-yellow-500";
+      risk = "Medium";
+    }
+  } else if (value !== undefined && high !== undefined && medium !== undefined) {
+    if (value > high) {
+      color = "bg-red-500";
+      risk = "High";
+    } else if (value > medium) {
+      color = "bg-yellow-500";
+      risk = "Medium";
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`w-3 h-3 rounded-full ${color}`} />
+      <span className="text-sm">{`${label} Risk: ${risk}${value ? ` (${value}${unit || ''})` : ''}`}</span>
+    </div>
+  );
+};
