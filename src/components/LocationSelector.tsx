@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Location } from '../types';
 
-// 修復 Leaflet 圖標問題
+// Fix Leaflet icon issues
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -24,7 +24,7 @@ interface LocationSelectorProps {
   trendYears: number;
 }
 
-// 地圖點擊事件處理組件
+// Map click event handler component
 const MapClickHandler: React.FC<{ onLocationSelect: (location: Location) => void }> = ({ onLocationSelect }) => {
   useMapEvents({
     click: (e) => {
@@ -47,21 +47,21 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   trendYears
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [mapCenter, setMapCenter] = useState<[number, number]>([25.0330, 121.5654]); // 台北市
+  const [mapCenter, setMapCenter] = useState<[number, number]>([25.0330, 121.5654]); // Taipei
   const [isMapFixed, setIsMapFixed] = useState(false);
   const mapRef = useRef<L.Map>(null);
 
-  // 通知父組件地圖固定狀態變化
+  // Notify parent component of map fixed state change
   useEffect(() => {
     onMapFixedChange?.(isMapFixed);
   }, [isMapFixed, onMapFixedChange]);
 
-  // 處理搜尋
+  // Handle search
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     try {
-      // 使用 Nominatim API 進行地理編碼
+      // Use Nominatim API for geocoding
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
       );
@@ -73,15 +73,15 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         onLocationSelect(location);
         setMapCenter([location.lat, location.lon]);
         
-        // 移動地圖到搜尋結果
+        // Move map to search result
         if (mapRef.current) {
           mapRef.current.setView([location.lat, location.lon], 13);
         }
         
-        // 固定地圖到底部
+        // Fix map to bottom
         setIsMapFixed(true);
         
-        // 滾動到地圖位置
+        // Scroll to map position
         setTimeout(() => {
           const mapElement = document.getElementById('fixed-map');
           if (mapElement) {
@@ -90,33 +90,33 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         }, 100);
       }
     } catch (error) {
-      console.error('搜尋地點時發生錯誤:', error);
+      console.error('Error searching location:', error);
     }
   };
 
-  // 處理 Enter 鍵搜尋
+  // Handle Enter key search
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
   };
 
-  // 處理開始日期變更
+  // Handle start date change
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onStartDateSelect(e.target.value);
   };
 
-  // 處理結束日期變更
+  // Handle end date change
   const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onEndDateSelect(e.target.value);
   };
 
-  // 重置地圖位置
+  // Reset map position
   const resetMapPosition = () => {
     setIsMapFixed(false);
   };
 
-  // 處理地圖點擊
+  // Handle map click
   const handleMapClick = (location: Location) => {
     onLocationSelect(location);
     if (!isMapFixed) {
@@ -132,23 +132,23 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6">
-      {/* 標題和說明 */}
+      {/* Title and description */}
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          🌍 選擇分析地點
+          🌍 Select Analysis Location
         </h2>
         <p className="text-gray-600">
-          點擊地圖或搜尋來選擇您想要分析天氣風險的地點
+          Click on the map or search to select the location for weather risk analysis
         </p>
       </div>
 
-      {/* 搜尋和日期選擇區域 */}
+      {/* Search and date selection area */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col lg:flex-row gap-4 items-center">
           <div className="flex-1 flex gap-3">
             <div className="flex-1">
               <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-2">
-                搜尋地點
+                Search Location
               </label>
               <input
                 id="search-input"
@@ -156,7 +156,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="輸入城市名稱或地址..."
+                placeholder="Enter city name or address..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -165,14 +165,14 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                 onClick={handleSearch}
                 className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
               >
-                🔍 搜尋
+                🔍 Search
               </button>
             </div>
           </div>
           <div className="flex flex-col lg:flex-row items-center gap-3">
             <div>
               <label htmlFor="start-date-picker" className="block text-sm font-medium text-gray-700 mb-2">
-                開始日期
+                Start Date
               </label>
               <input
                 id="start-date-picker"
@@ -184,7 +184,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             </div>
             <div>
               <label htmlFor="end-date-picker" className="block text-sm font-medium text-gray-700 mb-2">
-                結束日期
+                End Date
               </label>
               <input
                 id="end-date-picker"
@@ -198,13 +198,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           </div>
         </div>
 
-        {/* ✅ 歷史年數選擇，下拉式選單版本 */}
+        {/* ✅ Historical years selection, dropdown version */}
         <div className="mt-4 text-center">
           <label
             htmlFor="trend-years-select"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            歷史年數
+            Historical Years
           </label>
           <select
             id="trend-years-select"
@@ -214,30 +214,30 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           >
             {[1, 3, 5, 10, 15, 20, 25, 30].map((year) => (
               <option key={year} value={year}>
-                {year} 年
+                {year} years
               </option>
             ))}
           </select>
           <div className="text-xs text-gray-500 mt-1">
-            目前分析過去 <span className="font-semibold text-blue-600">{trendYears}</span> 年的趨勢
+            Currently analyzing trends for the past <span className="font-semibold text-blue-600">{trendYears}</span> years
           </div>
         </div>
         
-        {/* 選中的位置和日期資訊 */}
+        {/* Selected location and date information */}
         {selectedLocation && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <span className="text-blue-600">📍</span>
                 <span className="text-sm font-medium text-blue-800">
-                  已選擇位置: 緯度 {selectedLocation.lat.toFixed(4)}, 經度 {selectedLocation.lon.toFixed(4)}
+                  Selected location: Latitude {selectedLocation.lat.toFixed(4)}, Longitude {selectedLocation.lon.toFixed(4)}
                 </span>
               </div>
               {startDate && (
                 <div className="flex items-center gap-2">
                   <span className="text-blue-600">📅</span>
                   <span className="text-sm font-medium text-blue-800">
-                    分析期間: {startDate} {endDate && endDate !== startDate ? `至 ${endDate}` : ''}
+                    Analysis period: {startDate} {endDate && endDate !== startDate ? `to ${endDate}` : ''}
                   </span>
                 </div>
               )}
@@ -246,7 +246,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         )}
       </div>
 
-      {/* 地圖區域 - 根據狀態決定是否固定 */}
+      {/* Map area - determine if fixed based on state */}
       <div 
         id="fixed-map"
         className={`bg-white rounded-lg shadow-md overflow-hidden ${
@@ -257,18 +257,18 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       >
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            🗺️ 互動地圖
+            🗺️ Interactive Map
             <span className="text-sm font-normal text-gray-500">
-              (點擊地圖上的任意位置來選擇地點)
+              (Click anywhere on the map to select a location)
             </span>
           </h3>
           {isMapFixed && (
             <button
               onClick={resetMapPosition}
               className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-              title="重置地圖位置"
+              title="Reset map position"
             >
-              ↕️ 重置位置
+              ↕️ Reset Position
             </button>
           )}
         </div>
@@ -290,10 +290,10 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             
-            {/* 地圖點擊處理 */}
+            {/* Map click handler */}
             <MapClickHandler onLocationSelect={handleMapClick} />
             
-            {/* 選中的位置標記 */}
+            {/* Selected location marker */}
             {selectedLocation && (
               <Marker position={[selectedLocation.lat, selectedLocation.lon]} />
             )}
@@ -301,19 +301,19 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         </div>
       </div>
 
-      {/* 使用提示 - 當地圖固定時隱藏 */}
+      {/* Usage tips - hidden when map is fixed */}
       {!isMapFixed && (
         <div className="mt-6 bg-gray-50 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <div className="text-blue-500 text-xl">💡</div>
             <div>
-              <h4 className="font-medium text-gray-800 mb-1">使用提示</h4>
+              <h4 className="font-medium text-gray-800 mb-1">Usage Tips</h4>
               <ul className="text-sm text-gray-600 space-y-1">
-                <li>• 在地圖上點擊任意位置來選擇分析地點</li>
-                <li>• 使用搜尋框輸入城市名稱或地址進行快速定位</li>
-                <li>• 選擇您想要分析的日期範圍（開始日期和結束日期）</li>
-                <li>• 如果只選擇開始日期，將分析單日數據</li>
-                <li>• 選擇完成後，系統將自動載入該地點的歷史同期天氣數據</li>
+                <li>• Click anywhere on the map to select an analysis location</li>
+                <li>• Use the search box to enter city name or address for quick positioning</li>
+                <li>• Select the date range you want to analyze (start date and end date)</li>
+                <li>• If only start date is selected, single-day data will be analyzed</li>
+                <li>• After selection, the system will automatically load historical weather data for that location</li>
               </ul>
             </div>
           </div>

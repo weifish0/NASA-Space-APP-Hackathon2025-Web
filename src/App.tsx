@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import LocationSelector from './components/LocationSelector';
 import AnalysisDashboard from './components/AnalysisDashboard';
+import FloatingWeatherAssistant from './components/FloatingWeatherAssistant';
+import ApiStatusIndicator from './components/ApiStatusIndicator';
 import type { Location, WeatherApiResponse } from './types';
 import { fetchWeatherData, weatherApi } from './services/api';
-import './utils/browserTest'; // 導入瀏覽器兼容性測試
-import './utils/apiTest'; // 導入 API 連接測試
+import './utils/browserTest'; // Import browser compatibility test
+import './utils/apiTest'; // Import API connection test
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
 
 const App: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -18,16 +19,16 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isMapFixed, setIsMapFixed] = useState(false);
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
-  const [trendYears, setTrendYears] = useState<number>(20);
+  const [trendYears, setTrendYears] = useState<number>(5);
 
-  // 設置默認日期為今天
+  // Set default date to today
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setStartDate(today);
     setEndDate(today);
   }, []);
 
-  // 檢查 API 連接狀態
+  // Check API connection status
   useEffect(() => {
     const checkApiStatus = async () => {
       try {
@@ -42,39 +43,39 @@ const App: React.FC = () => {
     checkApiStatus();
   }, []);
 
-  // 處理位置選擇
+  // Handle location selection
   const handleLocationSelect = (location: Location) => {
     setSelectedLocation(location);
     setError(null);
   };
 
-  // 處理開始日期選擇
+  // Handle start date selection
   const handleStartDateSelect = (date: string) => {
     setStartDate(date);
     setError(null);
   };
 
-  // 處理結束日期選擇
+  // Handle end date selection
   const handleEndDateSelect = (date: string) => {
     setEndDate(date);
     setError(null);
   };
 
-  // 處理地圖固定狀態變化
+  // Handle map fixed state change
   const handleMapFixedChange = (fixed: boolean) => {
     setIsMapFixed(fixed);
   };
 
-  // 獲取天氣數據
+  // Fetch weather data
   const fetchData = async () => {
     if (!selectedLocation || !startDate) {
-      setError('請選擇地點和開始日期');
+      setError('Please select location and start date');
       return;
     }
 
-    // 驗證日期範圍
+    // Validate date range
     if (endDate && new Date(startDate) > new Date(endDate)) {
-      setError('開始日期不能晚於結束日期');
+      setError('Start date cannot be later than end date');
       return;
     }
 
@@ -85,18 +86,18 @@ const App: React.FC = () => {
       const data = await fetchWeatherData(selectedLocation, startDate, endDate || undefined, trendYears);
       setWeatherData(data);
     } catch (err) {
-      let errorMessage = '獲取天氣數據時發生錯誤，請稍後再試';
+      let errorMessage = 'Error occurred while fetching weather data, please try again later';
       
       if (err instanceof Error) {
-        // 檢查是否為 API 錯誤
+        // Check if it is an API error
         if ((err as any).status === 400) {
-          errorMessage = '請求參數錯誤，請檢查位置和日期';
+          errorMessage = 'Request parameter error, please check location and date';
         } else if ((err as any).status === 422) {
-          errorMessage = '數據驗證錯誤，請檢查輸入格式';
+          errorMessage = 'Data validation error, please check input format';
         } else if ((err as any).status === 500) {
-          errorMessage = '服務器內部錯誤，請稍後再試';
+          errorMessage = 'Internal server error, please try again later';
         } else if ((err as any).status === 502) {
-          errorMessage = 'NASA Power API 服務暫時不可用';
+          errorMessage = 'NASA Power API service temporarily unavailable';
         } else if (err.message) {
           errorMessage = err.message;
         }
@@ -109,7 +110,7 @@ const App: React.FC = () => {
     }
   };
 
-  // 當位置或日期改變時自動獲取數據
+  // Automatically fetch data when location or date changes
   useEffect(() => {
     if (selectedLocation && startDate) {
       fetchData();
@@ -118,21 +119,26 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* 標題區域 */}
+      {/* Title area */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900 text-center">
-            🌍 Event Horizon Weather
-          </h1>
-          <p className="text-center text-gray-600 mt-2">
-            天氣風險分析平台 - 基於歷史數據的智能預測
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                🌍 Event Horizon Weather
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Weather Risk Analysis Platform - Intelligent Prediction Based on Historical Data
+              </p>
+            </div>
+            <ApiStatusIndicator />
+          </div>
         </div>
       </header>
 
-      {/* 主要內容區域 */}
+      {/* Main content area */}
       <main className={`relative min-h-screen bg-gray-50 ${isMapFixed ? 'pb-96' : ''}`}>
-        {/* 位置選擇器 */}
+        {/* Location selector */}
         <div className="py-8">
           <LocationSelector
             onLocationSelect={handleLocationSelect}
@@ -147,7 +153,21 @@ const App: React.FC = () => {
           />
         </div>
 
+<<<<<<< HEAD
         {/* 載入狀態 */}
+        {loading && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 flex items-center gap-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <div className="flex flex-col">
+                <span className="text-lg font-medium">正在分析天氣數據...</span>
+                <span className="text-sm text-gray-500">從 NASA Power API 獲取歷史數據</span>
+              </div>
+            </div>
+          </div>
+        )}
+=======
+        {/* Loading state */}
         <AnimatePresence>
           {loading && (
             <motion.div
@@ -176,14 +196,14 @@ const App: React.FC = () => {
                 {/* ✅ Loading Text */}
                 <div className="flex flex-col">
                   <span className="text-lg font-semibold text-gray-800 tracking-wide">
-                    正在分析天氣數據...
+                    Analyzing weather data...
                   </span>
                   <span className="text-sm text-gray-600">
-                    從 NASA Power API 獲取歷史數據
+                    Fetching historical data from NASA Power API
                   </span>
                 </div>
 
-                {/* ✅ 小進度條動畫 */}
+                {/* ✅ Small progress bar animation */}
                 <div className="w-3/4 h-1.5 bg-gray-200 rounded-full overflow-hidden relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 animate-loading-bar"></div>
                 </div>
@@ -191,13 +211,14 @@ const App: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+>>>>>>> 8319687 (feat: LLM Chatbot)
 
-        {/* API 狀態指示器 */}
+        {/* API status indicator */}
         {apiStatus === 'checking' && (
           <div className="fixed top-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span>檢查 API 連接...</span>
+              <span>Checking API connection...</span>
             </div>
           </div>
         )}
@@ -206,7 +227,7 @@ const App: React.FC = () => {
           <div className="fixed top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
             <div className="flex items-center gap-2">
               <span>⚠️</span>
-              <span>API 連接失敗，請檢查後端服務</span>
+              <span>API connection failed, please check backend service</span>
             </div>
           </div>
         )}
@@ -215,12 +236,12 @@ const App: React.FC = () => {
           <div className="fixed top-4 left-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
             <div className="flex items-center gap-2">
               <span>✅</span>
-              <span>API 連接正常</span>
+              <span>API connection normal</span>
             </div>
           </div>
         )}
 
-        {/* 錯誤訊息 */}
+        {/* Error message */}
         {error && (
           <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
             <div className="flex items-center gap-2">
@@ -236,58 +257,64 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* 分析儀表板 */}
+        {/* Analysis dashboard */}
         {weatherData && !loading && (
           <div className="fixed inset-0 bg-white z-40 overflow-y-auto">
             <div className="relative">
-              {/* 關閉按鈕 */}
+              {/* Close button */}
               <button
                 onClick={() => setWeatherData(null)}
                 className="fixed top-4 right-4 z-50 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-colors"
-                title="關閉分析結果"
+                title="Close analysis results"
               >
                 ✕
               </button>
               
-              {/* 分析結果 */}
+              {/* Analysis results */}
               <AnalysisDashboard weatherData={weatherData} />
             </div>
           </div>
         )}
 
-        {/* 空狀態提示 */}
+        {/* Empty state prompt */}
         {!weatherData && !loading && selectedLocation && startDate && (
           <div className="max-w-7xl mx-auto px-6 pb-8">
             <div className="bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg">
               <div className="flex items-center gap-2">
                 <span>📍</span>
-                <span>已選擇位置和日期，正在分析中...</span>
+                <span>Location and date selected, analyzing...</span>
               </div>
             </div>
           </div>
         )}
 
-        {/* 初始提示 */}
+        {/* Initial prompt */}
         {!selectedLocation && (
           <div className="max-w-7xl mx-auto px-6 pb-8">
             <div className="bg-gray-800 text-white px-6 py-4 rounded-lg shadow-lg">
               <div className="flex items-center gap-2">
                 <span>👆</span>
-                <span>請點擊地圖或搜尋來選擇地點</span>
+                <span>Please click on the map or search to select a location</span>
               </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* 頁腳 */}
+      {/* Floating Weather Assistant */}
+      <FloatingWeatherAssistant 
+        selectedLocation={selectedLocation || undefined}
+        weatherData={weatherData || undefined}
+      />
+
+      {/* Footer */}
       <footer className="bg-gray-800 text-white py-8 mt-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-gray-400">
             Event Horizon Weather - NASA Space App Challenge 2025
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            基於歷史天氣數據的智能風險分析平台
+            Intelligent risk analysis platform based on historical weather data
           </p>
         </div>
       </footer>

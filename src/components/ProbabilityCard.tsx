@@ -20,12 +20,12 @@ const ProbabilityCard: React.FC<ProbabilityCardProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">機率:</span>
+          <span className="text-sm text-gray-600">Probability:</span>
           <span className="text-lg font-semibold text-green-600">{probability}</span>
         </div>
       </div>
       
-      {/* 進度條 */}
+      {/* Progress bar */}
       <div className="mt-4">
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
