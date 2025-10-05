@@ -1,10 +1,10 @@
-import type { Location } from '../types';
+import type { Location, WeatherApiResponse } from '../types';
 
 // Weather assistant request type
 export interface WeatherAssistantRequest {
   question: string;
   location?: Location;
-  weather_data?: any; // Can be any weather data
+  weather_data?: any; 
 }
 
 // Weather assistant response type
@@ -39,8 +39,13 @@ export class WeatherAssistantService {
     this.baseUrl = baseUrl;
   }
 
-  // Ask weather questions
+  /**
+   * 主要邏輯：將問題和上下文(地點、天氣數據)發送到後端 AI Assistant
+   * @param request - 包含問題和可選地點/天氣數據的請求物件
+   * @returns AI 的回應
+   */
   async askQuestion(request: WeatherAssistantRequest): Promise<WeatherAssistantResponse> {
+    // ⚠️ 注意：後端 /api/v1/weather/assistant 端點必須能接收這個 WeatherAssistantRequest 格式的 JSON Body
     try {
       const response = await fetch(`${this.baseUrl}/api/v1/weather/assistant`, {
         method: 'POST',
@@ -51,13 +56,28 @@ export class WeatherAssistantService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+        // 增強錯誤處理：嘗試解析後端回傳的詳細錯誤訊息
+        let errorDetail = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          // FastAPI 的驗證錯誤通常放在 errorData.detail
+          if (errorData.detail) {
+             errorDetail = typeof errorData.detail === 'string' 
+               ? errorData.detail 
+               : JSON.stringify(errorData.detail);
+          }
+        } catch (e) {
+          // 如果回應不是有效的 JSON，則使用原始文字作為錯誤訊息
+          errorDetail = await response.text();
+        }
+        throw new Error(errorDetail);
       }
 
       return await response.json();
+
     } catch (error) {
       console.error('Weather assistant API call failed:', error);
+      // 將錯誤向上拋出，讓 UI 層可以捕捉並顯示給使用者
       throw error;
     }
   }
@@ -89,7 +109,7 @@ export class WeatherAssistantService {
 // Create default instance
 export const weatherAssistant = new WeatherAssistantService();
 
-// Convenience functions
+// Convenience functions (no changes needed here)
 export const askWeatherQuestion = async (question: string): Promise<WeatherAssistantResponse> => {
   return weatherAssistant.quickAsk(question);
 };
