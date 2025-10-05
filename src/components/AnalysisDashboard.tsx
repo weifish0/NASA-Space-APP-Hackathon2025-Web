@@ -46,7 +46,9 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
       <h2 className="text-3xl font-bold text-yellow-100 mb-2 drop-shadow-[0_0_10px_rgba(255,255,180,0.8)]">
         Weather Risk Analysis Report
       </h2>
-      <p className="text-lg text-yellow-200/90">{weatherData.location.name} - Historical Weather Data Analysis</p>
+      <p className="text-lg text-yellow-200/90">
+        Location: ({weatherData.location.lat.toFixed(2)}, {weatherData.location.lon.toFixed(2)}) – Based on historical average data
+      </p>
     </div>
 
     <WeatherTypeCard weatherSummary={summary} />
