@@ -444,21 +444,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6">
-      {/* Title and description */}
-      <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-          🌍 Select Analysis Location
-        </h2>
-        <p className="text-gray-600 text-lg">
-          Click on the map, search, or use your current location to select a position for weather risk analysis
-        </p>
-        {isLocating && (
-          <div className="mt-4 flex items-center justify-center gap-2 text-blue-600">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            <span className="text-sm">Detecting your location...</span>
-          </div>
-        )}
-      </div>
+      
 
       {/* Search and date selection area */}
       <div className="card-modern p-6 mb-6">
