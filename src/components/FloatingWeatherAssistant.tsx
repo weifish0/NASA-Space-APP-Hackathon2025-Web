@@ -153,11 +153,6 @@ const FloatingWeatherAssistant: React.FC<FloatingWeatherAssistantProps> = ({
     setIsOpen(!isOpen);
   };
 
-  // ✨ 動畫切換邏輯
-  const lottieSrc = isOpen
-    ? "https://lottie.host/a77d5c86-ecad-485a-8a11-12001a7977e1/Qw5cDjr3eY.lottie" // 藍色版本
-    : "https://lottie.host/9090e068-2b9b-4635-b10a-7bef430a488c/TAXCI8dyWW.lottie"; // 金色版本
-
   return (
     <>
       {/* 🤖 機器人按鈕（縮放+動畫切換+不擋輸入框） */}
