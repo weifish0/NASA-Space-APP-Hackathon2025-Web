@@ -20,12 +20,75 @@
   .leaflet-container {
     height: 100%;
     width: 100%;
+    border-radius: 0 0 1rem 1rem;
   }
   
   .chart-container {
     position: relative;
     height: 400px;
     width: 100%;
+  }
+  
+  /* Map style buttons */
+  .map-style-btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105;
+  }
+  
+  .map-style-btn.active {
+    @apply bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg;
+  }
+  
+  .map-style-btn.inactive {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+  }
+  
+  /* Responsive map container */
+  .map-container {
+    @apply relative;
+  }
+  
+  .map-container.mobile {
+    height: 300px;
+  }
+  
+  .map-container.tablet {
+    height: 400px;
+  }
+  
+  .map-container.desktop {
+    height: 500px;
+  }
+  
+  .map-container.fixed {
+    height: 60vh;
+    max-height: 500px;
+  }
+  
+  /* Search input enhancements */
+  .search-input {
+    @apply w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+  }
+  
+  .search-input:focus {
+    @apply shadow-lg;
+  }
+  
+  /* Button enhancements */
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-secondary {
+    @apply px-3 py-1 text-sm bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 rounded-lg hover:from-gray-300 hover:to-gray-400 transition-all duration-200 font-medium;
+  }
+  
+  /* Card enhancements */
+  .card-modern {
+    @apply bg-white rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300;
+  }
+  
+  .card-gradient {
+    @apply bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200;
   }
 }
 
@@ -54,5 +117,119 @@
     100% {
       transform: translateX(100%);
     }
+  }
+  
+  /* Map animations */
+  .custom-marker {
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
+  }
+  
+  .custom-marker:hover {
+    transform: scale(1.2);
+    animation-play-state: paused;
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    50% {
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.6);
+    }
+    100% {
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+  }
+  
+  @keyframes pulse-pending {
+    0% {
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.6);
+      transform: scale(1.05);
+    }
+    100% {
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0.1;
+    }
+    100% {
+      transform: scale(1.4);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes slide-down {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-slide-down {
+    animation: slide-down 0.3s ease-out;
+  }
+  
+  /* Map container animations */
+  .leaflet-container {
+    transition: all 0.3s ease;
+  }
+  
+  .map-loading {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .map-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: loading-sweep 1.5s infinite;
+    z-index: 1000;
+  }
+  
+  @keyframes loading-sweep {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Smooth transitions */
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Hover effects */
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   }
 }

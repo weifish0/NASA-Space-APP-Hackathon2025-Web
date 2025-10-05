@@ -286,11 +286,13 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Floating Weather Assistant */}
-      <FloatingWeatherAssistant 
-        selectedLocation={selectedLocation || undefined}
-        weatherData={weatherData || undefined}
-      />
+      {/* Floating Weather Assistant - only show on analysis page */}
+      {weatherData && (
+        <FloatingWeatherAssistant 
+          selectedLocation={selectedLocation || undefined}
+          weatherData={weatherData || undefined}
+        />
+      )}
 
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-8 mt-12">
