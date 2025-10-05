@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Chart as ReactChart } from 'react-chartjs-2';
 import type { TrendDataPoint, ChartData } from '../types';
 import GlassCard from './GlassCard';
 
@@ -157,7 +157,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
 
       {/* Chart */}
       <div className="relative h-96 mb-4">
-        <Line data={chartData} options={options} />
+        <ReactChart type='line' data={chartData} options={options} />
       </div>
 
       {/* Download Button */}

@@ -1,6 +1,8 @@
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
 /* Custom styles */
 @layer base {
@@ -45,6 +47,7 @@
   }
   
   /* Map style buttons */
+  /* stylelint-disable declaration-block-no-redundant-longhand-properties */
   .map-style-btn {
     @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105;
   }
