@@ -201,25 +201,37 @@ const FloatingWeatherAssistant: React.FC<FloatingWeatherAssistantProps> = ({
                 <p className="text-xs text-blue-100">Powered by AI</p>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-white/20 rounded-full transition-colors"
-              title="Close"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+            {/* ✅ Action Buttons */}
+            <div className="flex items-center gap-2">
+                {/* ✅ Clear Chat Button Added */}
+                <button
+                    onClick={clearChat}
+                    className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                    title="Clear Chat"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h5M5.5 9.5A7.5 7.5 0 0119.07 8.93M20 20v-5h-5m-1.5-4.5A7.5 7.5 0 014.93 15.07"></path></svg>
+                </button>
+                {/* Close Button */}
+                <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                    title="Close"
+                >
+                    <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </button>
+            </div>
           </div>
 
           {/* Messages */}

@@ -1,4 +1,4 @@
-import type { Location, WeatherApiResponse } from '../types';
+import type { Location } from '../types';
 
 // Weather assistant request type
 export interface WeatherAssistantRequest {
