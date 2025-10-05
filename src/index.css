@@ -1,6 +1,8 @@
+/* stylelint-disable at-rule-no-unknown */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
 /* Custom styles */
 @layer base {
@@ -12,6 +14,21 @@
     margin: 0;
     padding: 0;
     min-height: 100vh;
+  }
+
+  /* Brand color variables for a modern, vibrant theme */
+  :root {
+    /* Core brand */
+    --ehw-primary: #6366f1; /* indigo-500/600 */
+    --ehw-primary-600: #4f46e5;
+    --ehw-secondary: #06b6d4; /* cyan-500 */
+    --ehw-secondary-600: #0891b2;
+    --ehw-accent: #22d3ee; /* cyan-400 */
+
+    /* Background neutrals */
+    --ehw-bg-0: #f8fafc; /* slate-50 */
+    --ehw-bg-1: #eef2ff; /* indigo-50 */
+    --ehw-bg-2: #f0f9ff; /* sky-50 */
   }
 }
 
@@ -30,12 +47,13 @@
   }
   
   /* Map style buttons */
+  /* stylelint-disable declaration-block-no-redundant-longhand-properties */
   .map-style-btn {
     @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105;
   }
   
   .map-style-btn.active {
-    @apply bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg;
+    @apply bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg;
   }
   
   .map-style-btn.inactive {
@@ -75,7 +93,7 @@
   
   /* Button enhancements */
   .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl;
+    @apply px-6 py-3 bg-gradient-to-r from-cyan-500 to-indigo-600 text-white rounded-xl hover:from-cyan-600 hover:to-indigo-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl;
   }
   
   .btn-secondary {
@@ -88,24 +106,40 @@
   }
   
   .card-gradient {
-    @apply bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200;
+    @apply bg-gradient-to-r from-cyan-50 to-indigo-50 rounded-xl border border-cyan-200;
   }
 }
 
 @layer utilities {
   /* Custom utility classes */
   .bg-hero-gradient {
-    background: radial-gradient(1200px 600px at 10% -10%, rgba(59,130,246,0.25), transparent 60%),
-                radial-gradient(800px 400px at 110% 10%, rgba(168,85,247,0.25), transparent 60%),
-                linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #faf5ff 100%);
-    background-size: 200% 200%;
-    animation: gradient-flow 16s ease-in-out infinite;
+    /* Light pastel blue background */
+    background:
+                /* Soft grid */
+                repeating-linear-gradient(0deg, transparent 0 26px, rgba(59,130,246,0.06) 26px 27px),
+                repeating-linear-gradient(90deg, transparent 0 26px, rgba(14,165,233,0.06) 26px 27px),
+                /* Gentle aurora blobs */
+                radial-gradient(1100px 700px at 8% -10%, rgba(14,165,233,0.22), transparent 60%),
+                radial-gradient(1200px 900px at 110% 0%, rgba(59,130,246,0.20), transparent 60%),
+                radial-gradient(800px 500px at 50% 110%, rgba(125,211,252,0.18), transparent 60%),
+                /* Subtle sheen */
+                conic-gradient(from 180deg at 50% 50%, rgba(125,211,252,0.14), transparent 25%, rgba(59,130,246,0.12) 50%, transparent 75%, rgba(14,165,233,0.12)),
+                /* Light base */
+                linear-gradient(135deg, #ebf5ff 0%, #eaf3ff 40%, #e6f7ff 100%);
+    background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%, 200% 200%;
+    animation: gradient-flow 16s ease-in-out infinite, aurora-shift 22s ease-in-out infinite;
   }
 
   @keyframes gradient-flow {
     0% { background-position: 0% 0%; }
     50% { background-position: 100% 100%; }
     100% { background-position: 0% 0%; }
+  }
+
+  @keyframes aurora-shift {
+    0%   { filter: hue-rotate(0deg) saturate(1); }
+    50%  { filter: hue-rotate(10deg) saturate(1.05); }
+    100% { filter: hue-rotate(0deg) saturate(1); }
   }
 
   .noise-overlay {
@@ -124,11 +158,11 @@
   }
 
   .glass-card {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.28);
     box-shadow: 0 12px 40px rgba(2,6,23,0.08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
   .text-shadow {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -252,7 +286,7 @@
   
   /* Gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+    background: linear-gradient(135deg, var(--ehw-secondary), var(--ehw-primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

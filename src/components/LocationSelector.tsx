@@ -66,7 +66,7 @@ interface LocationSelectorProps {
 // Create custom marker icon
 const createCustomIcon = (color: string = '#3B82F6', isPending: boolean = false) => {
   const animation = isPending ? 'pulse-pending 1.5s infinite' : 'pulse 2s infinite';
-  
+
   if (isPending) {
     // 圖釘樣式的待確認標記
     const html = `
@@ -118,7 +118,7 @@ const createCustomIcon = (color: string = '#3B82F6', isPending: boolean = false)
         "></div>
       </div>
     `;
-    
+
     return L.divIcon({
       className: 'custom-marker',
       html: html,
@@ -143,7 +143,7 @@ const createCustomIcon = (color: string = '#3B82F6', isPending: boolean = false)
         animation: ${animation};
       ">📍</div>
     `;
-    
+
     return L.divIcon({
       className: 'custom-marker',
       html: html,
@@ -189,7 +189,7 @@ const createUserLocationIcon = () => {
       "></div>
     </div>
   `;
-  
+
   return L.divIcon({
     className: 'user-location-marker',
     html: html,
@@ -221,6 +221,9 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   trendYears
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const suggestAbortRef = useRef<AbortController | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([25.0330, 121.5654]); // Default to Taipei
   const [isMapFixed, setIsMapFixed] = useState(false);
   const [mapStyle, setMapStyle] = useState(MAP_STYLES[0]); // Default to OSM
@@ -231,6 +234,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   const [pendingLocation, setPendingLocation] = useState<Location | null>(null);
   const [pendingAddress, setPendingAddress] = useState<string>('');
   const [showLocationConfirm, setShowLocationConfirm] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const mapRef = useRef<L.Map>(null);
 
   // Notify parent component of map fixed state change
@@ -260,16 +264,16 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       async (position) => {
         const { latitude, longitude } = position.coords;
         const location = { lat: latitude, lon: longitude };
-        
+
         // Save user's current location
         setUserLocation(location);
-        
+
         // Move map to current location
         setMapCenter([latitude, longitude]);
         if (mapRef.current) {
           mapRef.current.setView([latitude, longitude], 15);
         }
-        
+
         if (showConfirm) {
           // Get address from coordinates for confirmation
           try {
@@ -278,7 +282,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             );
             const data = await response.json();
             const address = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-            
+
             setPendingLocation(location);
             setPendingAddress(address);
             setShowLocationConfirm(true);
@@ -289,7 +293,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             setShowLocationConfirm(true);
           }
         }
-        
+
         setIsLocating(false);
       },
       (error) => {
@@ -327,7 +331,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       setPendingLocation(null);
       setPendingAddress('');
       setIsMapFixed(true);
-      
+
       setTimeout(() => {
         const mapElement = document.getElementById('fixed-map');
         if (mapElement) {
@@ -355,21 +359,21 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
       );
       const data = await response.json();
-      
+
       if (data.length > 0) {
         const { lat, lon } = data[0];
         const location = { lat: parseFloat(lat), lon: parseFloat(lon) };
         onLocationSelect(location);
         setMapCenter([location.lat, location.lon]);
-        
+
         // Move map to search result
         if (mapRef.current) {
           mapRef.current.setView([location.lat, location.lon], 13);
         }
-        
+
         // Fix map to bottom
         setIsMapFixed(true);
-        
+
         // Scroll to map position
         setTimeout(() => {
           const mapElement = document.getElementById('fixed-map');
@@ -383,6 +387,66 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     } finally {
       setIsMapLoading(false);
     }
+  };
+
+  // Fetch top-3 suggestions as user types (debounced)
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q) {
+      setSuggestions([]);
+      return;
+    }
+
+    const handler = setTimeout(async () => {
+      try {
+        setIsSuggesting(true);
+        if (suggestAbortRef.current) {
+          suggestAbortRef.current.abort();
+        }
+        const controller = new AbortController();
+        suggestAbortRef.current = controller;
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=3`, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        const data = await resp.json();
+        if (Array.isArray(data)) {
+          setSuggestions(data.slice(0, 3));
+        } else {
+          setSuggestions([]);
+        }
+      } catch (e) {
+        if ((e as any)?.name !== 'AbortError') {
+          console.error('Error fetching suggestions:', e);
+        }
+      } finally {
+        setIsSuggesting(false);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  const handleSelectSuggestion = async (s: { display_name: string; lat: string; lon: string }) => {
+    const location = { lat: parseFloat(s.lat), lon: parseFloat(s.lon) };
+    onLocationSelect(location);
+    setSearchQuery(s.display_name);
+    setSuggestions([]);
+    setMapCenter([location.lat, location.lon]);
+    if (mapRef.current) {
+      mapRef.current.setView([location.lat, location.lon], 13);
+    }
+    setIsMapFixed(true);
+    setTimeout(() => {
+      const mapElement = document.getElementById('fixed-map');
+      if (mapElement) {
+        mapElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 100);
   };
 
   // Handle Enter key search
@@ -414,7 +478,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     if (mapRef.current) {
       mapRef.current.setView([location.lat, location.lon], 15);
     }
-    
+
     // Get address from coordinates
     try {
       const response = await fetch(
@@ -422,7 +486,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       );
       const data = await response.json();
       const address = data.display_name || `${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}`;
-      
+
       setPendingLocation(location);
       setPendingAddress(address);
       setShowLocationConfirm(true);
@@ -443,228 +507,274 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6">
-      
-
-      {/* Search and date selection area */}
-      <div className="card-modern p-6 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4 items-center">
-          <div className="flex-1 flex gap-3">
-            <div className="flex-1">
-              <label htmlFor="search-input" className="block text-sm font-semibold text-gray-700 mb-2">
-                🔍 Search Location
-              </label>
-              <input
-                id="search-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Enter city name or address..."
-                className="search-input"
-              />
-            </div>
-            <div className="flex items-end gap-2">
-              <button
-                onClick={handleSearch}
-                disabled={isMapLoading}
-                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isMapLoading ? '⏳ Searching...' : '🔍 Search'}
-              </button>
-              <button
-                onClick={() => getCurrentLocation(true)}
-                disabled={isLocating}
-                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Use current location"
-              >
-                {isLocating ? '⏳ Locating...' : '📍 Current Location'}
-              </button>
-            </div>
-          </div>
-          <div className="flex flex-col lg:flex-row items-center gap-3">
-            <div>
-              <label htmlFor="start-date-picker" className="block text-sm font-semibold text-gray-700 mb-2">
-                📅 Start Date
-              </label>
-              <input
-                id="start-date-picker"
-                type="date"
-                value={startDate || ''}
-                onChange={handleStartDateChange}
-                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-            <div>
-              <label htmlFor="end-date-picker" className="block text-sm font-semibold text-gray-700 mb-2">
-                📅 End Date
-              </label>
-              <input
-                id="end-date-picker"
-                type="date"
-                value={endDate || ''}
-                onChange={handleEndDateChange}
-                min={startDate}
-                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Map style selector */}
-        <div className="mt-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            🎨 Map Style
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {MAP_STYLES.map((style) => (
-              <button
-                key={style.id}
-                onClick={() => handleMapStyleChange(style.id)}
-                className={`map-style-btn ${
-                  mapStyle.id === style.id ? 'active' : 'inactive'
-                }`}
-              >
-                <span className="mr-2">{style.icon}</span>
-                <span className="hidden sm:inline">{style.name}</span>
-                <span className="sm:hidden">{style.icon}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Historical years selection */}
-        <div className="mt-4 text-center">
-          <label
-            htmlFor="trend-years-select"
-            className="block text-sm font-semibold text-gray-700 mb-2"
-          >
-            📊 Historical Analysis Period
-          </label>
-          <select
-            id="trend-years-select"
-            value={trendYears}
-            onChange={(e) => onTrendYearsChange(parseInt(e.target.value))}
-            className="px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-200"
-          >
-            {[1, 3, 5, 10, 15, 20, 25, 30].map((year) => (
-              <option key={year} value={year}>
-                {year} years
-              </option>
-            ))}
-          </select>
-          <div className="text-sm text-gray-600 mt-2">
-            Currently analyzing trends for the past <span className="font-bold text-blue-600">{trendYears}</span> years
-          </div>
-        </div>
-        
-        {/* Selected location and date information */}
-        {selectedLocation && (
-          <div className="mt-6 p-4 card-gradient">
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">📍</span>
-                <span className="text-sm font-semibold text-blue-800">
-                  Selected location: Latitude {selectedLocation.lat.toFixed(4)}, Longitude {selectedLocation.lon.toFixed(4)}
-                </span>
+    <div className="w-full max-w-8xl mx-auto p-3">
+      <div className="flex gap-6 items-start">
+        {/* Left column */}
+        <div className="w-1/3">
+          {/* Search and date selection area */}
+          <div className="glass-card rounded-2xl p-6 mb-6">
+            <div className="flex flex-col gap-4">
+              {/* Row 1: Search label + input + search button */}
+              <div className="flex-1 flex gap-3 items-end">
+                <div className="flex-1 relative">
+                  <label htmlFor="search-input" className="block text-sm font-semibold text-gray-700 mb-2">
+                    🔍 Search Location
+                  </label>
+                  <input
+                    id="search-input"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Enter city name or address..."
+                    className="search-input"
+                  />
+                  {searchQuery && suggestions.length > 0 && (
+                    <div className="absolute z-20 mt-2 w-full bg-white/80 backdrop-blur rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+                      {suggestions.map((s, idx) => (
+                        <button
+                          key={`${s.lat}-${s.lon}-${idx}`}
+                          onClick={() => handleSelectSuggestion(s)}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                          title={s.display_name}
+                        >
+                          <div className="text-sm text-gray-800 truncate">{s.display_name}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {isSuggesting && (
+                    <div className="absolute right-3 top-10 text-xs text-gray-500">Searching...</div>
+                  )}
+                </div>
+                <div className="flex items-end gap-2">
+                  <button
+                    onClick={handleSearch}
+                    disabled={isMapLoading}
+                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isMapLoading ? '⏳ Searching...' : '🔍 Search'}
+                  </button>
+                </div>
               </div>
-              {startDate && (
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">📅</span>
-                  <span className="text-sm font-semibold text-blue-800">
-                    Analysis period: {startDate} {endDate && endDate !== startDate ? `to ${endDate}` : ''}
-                  </span>
+              {/* Row 2: Start/End Date */}
+              <div className="w-full flex flex-col lg:flex-row items-center gap-3 min-w-0">
+                <div className="w-full min-w-0">
+                  <label htmlFor="start-date-picker" className="block text-sm font-semibold text-gray-700 mb-2">
+                    📅 Start Date
+                  </label>
+                  <input
+                    id="start-date-picker"
+                    type="date"
+                    value={startDate || ''}
+                    onChange={handleStartDateChange}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+                <div className="w-full min-w-0">
+                  <label htmlFor="end-date-picker" className="block text-sm font-semibold text-gray-700 mb-2">
+                    📅 End Date
+                  </label>
+                  <input
+                    id="end-date-picker"
+                    type="date"
+                    value={endDate || ''}
+                    onChange={handleEndDateChange}
+                    min={startDate}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Advanced toggle */}
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(v => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+                aria-expanded={showAdvanced}
+                aria-controls="advanced-panel"
+              >
+                <span className="font-semibold text-gray-800">⚙️ Advanced</span>
+                <span className={`transform transition-transform ${showAdvanced ? 'rotate-180' : ''}`}>▾</span>
+              </button>
+              {showAdvanced && (
+                <div id="advanced-panel" className="mt-4">
+                  <div className="rounded-2xl border-2 border-gray-200 bg-white/70 p-4">
+                    <div className="flex flex-col lg:flex-row gap-4 items-start">
+                      {/* Map style selector */}
+                      <div className="bg-gray-50 rounded-xl p-4 flex-1 w-full lg:basis-2/3 lg:flex-[2]">
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                          🎨 Map Style
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {MAP_STYLES.map((style) => (
+                            <button
+                              key={style.id}
+                              onClick={() => handleMapStyleChange(style.id)}
+                              className={`w-full map-style-btn ${mapStyle.id === style.id ? 'active' : 'inactive'
+                                }`}
+                            >
+                              <span className="mr-2">{style.icon}</span>
+                              <span className="hidden sm:inline">{style.name}</span>
+                              <span className="sm:hidden">{style.icon}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Historical years selection */}
+                      <div className="bg-gray-50 rounded-xl p-4 w-full lg:basis-1/3 lg:flex-[1] lg:max-w-sm lg:ml-auto">
+                        <label
+                          htmlFor="trend-years-select"
+                          className="block text-sm font-semibold text-gray-700 mb-2"
+                        >
+                          📊 Historical Analysis Period
+                        </label>
+                        <div className="flex">
+                          <select
+                            id="trend-years-select"
+                            value={trendYears}
+                            onChange={(e) => onTrendYearsChange(parseInt(e.target.value))}
+                            className="px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-200"
+                          >
+                            {[1, 3, 5, 10, 15, 20, 25, 30].map((year) => (
+                              <option key={year} value={year}>
+                                {year} years
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="text-sm text-gray-600 mt-2">
+                          Currently analyzing trends for the past <span className="font-bold text-blue-600">{trendYears}</span> years
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* Map area */}
-      <div 
-        id="fixed-map"
-        className={`card-modern overflow-hidden ${
-          isMapFixed 
-            ? 'fixed bottom-0 left-0 right-0 z-40 mx-0 rounded-t-2xl' 
-            : 'relative'
-        }`}
-      >
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100">
-          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-            🗺️ Interactive Map
-            <span className="text-sm font-normal text-gray-500">
-              (Click anywhere on the map to select analysis location)
-            </span>
-          </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">
-              Style: {mapStyle.icon} {mapStyle.name}
-            </span>
-            {isMapFixed && (
-              <button
-                onClick={resetMapPosition}
-                className="btn-secondary"
-                title="Reset map position"
-              >
-                ↕️ Reset Position
-              </button>
+            {/* Selected location and date information */}
+            {selectedLocation && (
+              <div className="mt-6 p-4 card-gradient">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">📍</span>
+                    <span className="text-sm font-semibold text-blue-800">
+                      Selected location: Latitude {selectedLocation.lat.toFixed(4)}, Longitude {selectedLocation.lon.toFixed(4)}
+                    </span>
+                  </div>
+                  {startDate && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">📅</span>
+                      <span className="text-sm font-semibold text-blue-800">
+                        Analysis period: {startDate} {endDate && endDate !== startDate ? `to ${endDate}` : ''}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
-        <div 
-          className="relative" 
-          style={{ 
-            height: isMapFixed ? '60vh' : '500px',
-            maxHeight: isMapFixed ? '500px' : 'none'
-          }}
-        >
-          {isMapLoading && (
-            <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
-              <div className="flex flex-col items-center gap-3">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                <span className="text-sm text-gray-600">Loading map...</span>
+
+        {/* Right column */}
+        <div className="w-2/3">
+          {/* Map area */}
+          <div
+            id="fixed-map"
+            className={`card-modern overflow-hidden ${isMapFixed
+              ? 'fixed bottom-0 left-0 right-0 z-40 mx-0 rounded-t-2xl'
+              : 'relative'
+              }`}
+          >
+            <div className="p-4 border-b border-white/25 flex items-center justify-between bg-white/15 backdrop-blur-xl">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                🗺️ Interactive Map
+                <span className="text-sm font-normal text-gray-500">
+                  (Click anywhere on the map to select analysis location)
+                </span>
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">
+                  Style: {mapStyle.icon} {mapStyle.name}
+                </span>
+                <button
+                  onClick={() => getCurrentLocation(true)}
+                  disabled={isLocating}
+                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed px-2 py-1 text-xs"
+                  title="Use current location"
+                >
+                  {isLocating ? '⏳ Locating...' : '📍 Current Location'}
+                </button>
+                {isMapFixed && (
+                  <button
+                    onClick={resetMapPosition}
+                    className="btn-secondary"
+                    title="Reset map position"
+                  >
+                    ↕️ Reset Position
+                  </button>
+                )}
               </div>
             </div>
-          )}
-          <MapContainer
-            center={mapCenter}
-            zoom={13}
-            className="w-full h-full rounded-b-2xl"
-            ref={mapRef}
-          >
-            <TileLayer
-              attribution={mapStyle.attribution}
-              url={mapStyle.url}
-            />
-            
-            {/* Map click handler */}
-            <MapClickHandler onLocationSelect={handleMapClick} />
-            
-            {/* User's current location marker */}
-            {userLocation && (
-              <Marker 
-                position={[userLocation.lat, userLocation.lon]}
-                icon={createUserLocationIcon()}
-              />
-            )}
-            
-            {/* Selected location marker with custom icon */}
-            {selectedLocation && (
-              <Marker 
-                position={[selectedLocation.lat, selectedLocation.lon]}
-                icon={createCustomIcon('#3B82F6', false)}
-              />
-            )}
-            
-            {/* Pending location marker (for confirmation) */}
-            {pendingLocation && (
-              <Marker 
-                position={[pendingLocation.lat, pendingLocation.lon]}
-                icon={createCustomIcon('#F59E0B', true)}
-              />
-            )}
-          </MapContainer>
+            <div
+              className="relative"
+              style={{
+                height: isMapFixed ? '60vh' : '500px',
+                maxHeight: isMapFixed ? '500px' : 'none'
+              }}
+            >
+              {isMapLoading && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <span className="text-sm text-gray-600">Loading map...</span>
+                  </div>
+                </div>
+              )}
+              <MapContainer
+                center={mapCenter}
+                zoom={13}
+                className="w-full h-full rounded-b-2xl"
+                ref={mapRef}
+              >
+                <TileLayer
+                  attribution={mapStyle.attribution}
+                  url={mapStyle.url}
+                />
+
+                {/* Map click handler */}
+                <MapClickHandler onLocationSelect={handleMapClick} />
+
+                {/* User's current location marker */}
+                {userLocation && (
+                  <Marker
+                    position={[userLocation.lat, userLocation.lon]}
+                    icon={createUserLocationIcon()}
+                  />
+                )}
+
+                {/* Selected location marker with custom icon */}
+                {selectedLocation && (
+                  <Marker
+                    position={[selectedLocation.lat, selectedLocation.lon]}
+                    icon={createCustomIcon('#3B82F6', false)}
+                  />
+                )}
+
+                {/* Pending location marker (for confirmation) */}
+                {pendingLocation && (
+                  <Marker
+                    position={[pendingLocation.lat, pendingLocation.lon]}
+                    icon={createCustomIcon('#F59E0B', true)}
+                  />
+                )}
+              </MapContainer>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -710,11 +820,11 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       {showLocationConfirm && pendingLocation && (
         <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-4">
           {/* Backdrop overlay */}
-          <div 
+          <div
             className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
             onClick={cancelLocationSelection}
           ></div>
-          
+
           {/* Modal content */}
           <div className="relative z-[10000] max-w-md w-full mx-4">
             <div className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-200 animate-slide-down relative">
@@ -728,7 +838,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              
+
               <div className="text-center">
                 <div className="text-4xl mb-4">📍</div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4">

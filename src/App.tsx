@@ -24,9 +24,9 @@ const App: React.FC = () => {
     const handleScroll = () => {
       const currentY = window.scrollY || window.pageYOffset;
       const delta = currentY - lastScrollYRef.current;
-      if (currentY > 60 && delta > THRESHOLD) {
+      if (currentY > 40 && delta > THRESHOLD) {
         setIsNavHidden(true);
-      } else if (delta < -THRESHOLD || currentY <= 60) {
+      } else if (delta < -THRESHOLD || currentY <= 40) {
         setIsNavHidden(false);
       }
       lastScrollYRef.current = currentY;
@@ -128,11 +128,11 @@ const App: React.FC = () => {
       <div className="noise-overlay fixed inset-0 z-0"></div>
       {/* Title area */}
       <header className={`glass-header sticky top-0 z-10 transition-transform duration-300 will-change-transform ${isNavHidden ? '-translate-y-full' : 'translate-y-0'} transform`}>
-        <div className={`max-w-7xl mx-auto px-4 py-4 transition-all duration-300`}>
+        <div className={`max-w-8xl mx-auto px-4 py-1 transition-all duration-300`}>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <a href="/" className="block" title="Go to homepage">
-                <img src="/logo.svg" alt="Logo" className={`h-[60px] w-auto transition-all duration-300`} />
+                <img src="/logo.svg" alt="Logo" className={`h-[65px] w-auto transition-all duration-300`} />
               </a>
               <div>
                 <h1 className="text-3xl font-extrabold gradient-text tracking-tight">
@@ -267,17 +267,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Initial prompt */}
-        {!selectedLocation && (
-          <div className="max-w-7xl mx-auto px-6 pb-8">
-            <div className="glass-card px-6 py-4 rounded-xl">
-              <div className="flex items-center gap-2">
-                <span>👆</span>
-                <span className="text-gray-800">Please click on the map or search to select a location</span>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
 
       {/* Floating Weather Assistant - only show on analysis page */}
