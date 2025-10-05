@@ -96,7 +96,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data }) => {
       },
       title: {
         display: true,
-        text: `過去20年${getChartTitle(selectedChart)}趨勢`,
+        text: `過去${data.length}年${getChartTitle(selectedChart)}趨勢`,
         font: {
           size: 16,
           weight: 'bold' as const,
