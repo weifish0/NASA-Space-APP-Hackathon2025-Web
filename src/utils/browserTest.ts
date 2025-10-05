@@ -1,34 +1,34 @@
-// 瀏覽器兼容性測試
+// Browser compatibility test
 import { BrowserCompatibility } from './browserCompatibility';
 import { weatherApi } from '../services/api';
 
 export const runBrowserCompatibilityTest = async (): Promise<void> => {
-  console.log('🔍 開始瀏覽器兼容性測試...');
+  console.log('🔍 Starting browser compatibility test...');
   
-  // 檢查基本 API 支援
-  console.log('📋 檢查 Web API 支援:');
+  // Check basic API support
+  console.log('📋 Checking Web API support:');
   console.log(`  - Fetch API: ${BrowserCompatibility.supportsFetch() ? '✅' : '❌'}`);
   console.log(`  - Promise: ${BrowserCompatibility.supportsPromise() ? '✅' : '❌'}`);
   console.log(`  - AbortController: ${BrowserCompatibility.supportsAbortController() ? '✅' : '❌'}`);
   
-  // 顯示瀏覽器資訊
+  // Display browser information
   const browserInfo = BrowserCompatibility.getBrowserInfo();
-  console.log(`🌐 瀏覽器資訊: ${browserInfo.name} ${browserInfo.version} (${browserInfo.isModern ? '現代' : '舊版'})`);
+  console.log(`🌐 Browser info: ${browserInfo.name} ${browserInfo.version} (${browserInfo.isModern ? 'Modern' : 'Legacy'})`);
   
-  // 測試 API 連接
+  // Test API connection
   try {
-    console.log('🔗 測試 API 連接...');
+    console.log('🔗 Testing API connection...');
     const health = await weatherApi.checkHealth();
-    console.log('✅ API 健康檢查通過:', health);
+    console.log('✅ API health check passed:', health);
   } catch (error) {
-    console.error('❌ API 連接失敗:', error);
+    console.error('❌ API connection failed:', error);
   }
   
-  console.log('✅ 瀏覽器兼容性測試完成');
+  console.log('✅ Browser compatibility test completed');
 };
 
-// 在開發環境中自動運行測試
-if (import.meta.env.DEV) {
+// Automatically run tests in development environment (disabled to reduce load)
+if (import.meta.env.DEV && false) { // Disabled to prevent API overload
   setTimeout(() => {
     runBrowserCompatibilityTest();
   }, 1000);

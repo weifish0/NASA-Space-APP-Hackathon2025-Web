@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 自定義樣式 */
+/* Custom styles */
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
@@ -16,7 +16,7 @@
 }
 
 @layer components {
-  /* 自定義組件樣式 */
+  /* Custom component styles */
   .leaflet-container {
     height: 100%;
     width: 100%;
@@ -30,7 +30,7 @@
 }
 
 @layer utilities {
-  /* 自定義工具類 */
+  /* Custom utility classes */
   .text-shadow {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }

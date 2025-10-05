@@ -8,57 +8,57 @@ interface WeatherTypeCardProps {
 const WeatherTypeCard: React.FC<WeatherTypeCardProps> = ({ weatherSummary }) => {
   const { weatherType, avgTemperature, maxTemperature, minTemperature, humidity, windSpeed } = weatherSummary;
 
-  // 根據天氣類型選擇顏色和圖標
+  // Select color and icon based on weather type
   const getWeatherTypeStyle = (type: string) => {
     switch (type) {
-      case '炎熱':
+      case 'Hot':
         return {
           bgColor: 'bg-red-500',
           textColor: 'text-red-100',
           icon: '🌡️',
-          description: '高溫高濕，注意防暑'
+          description: 'High temperature and humidity, beware of heat stroke'
         };
-      case '寒冷':
+      case 'Cold':
         return {
           bgColor: 'bg-blue-500',
           textColor: 'text-blue-100',
           icon: '❄️',
-          description: '低溫環境，注意保暖'
+          description: 'Low temperature environment, keep warm'
         };
-      case '潮濕':
+      case 'Humid':
         return {
           bgColor: 'bg-gray-500',
           textColor: 'text-gray-100',
           icon: '💧',
-          description: '高濕度或降雨，注意防潮'
+          description: 'High humidity or rainfall, beware of moisture'
         };
-      case '強風':
+      case 'Windy':
         return {
           bgColor: 'bg-yellow-500',
           textColor: 'text-yellow-100',
           icon: '💨',
-          description: '強風環境，注意安全'
+          description: 'Strong wind environment, be careful'
         };
-      case '悶熱':
+      case 'Muggy':
         return {
           bgColor: 'bg-orange-500',
           textColor: 'text-orange-100',
           icon: '🔥',
-          description: '悶熱環境，注意通風'
+          description: 'Muggy environment, ensure ventilation'
         };
-      case '舒適':
+      case 'Comfortable':
         return {
           bgColor: 'bg-green-500',
           textColor: 'text-green-100',
           icon: '😊',
-          description: '舒適的天氣條件'
+          description: 'Comfortable weather conditions'
         };
       default:
         return {
           bgColor: 'bg-gray-400',
           textColor: 'text-gray-100',
           icon: '❓',
-          description: '未知天氣類型'
+          description: 'Unknown weather type'
         };
     }
   };
@@ -71,44 +71,44 @@ const WeatherTypeCard: React.FC<WeatherTypeCardProps> = ({ weatherSummary }) => 
         <div className="flex items-center gap-3">
           <span className="text-3xl">{style.icon}</span>
           <div>
-            <h3 className="text-xl font-bold">天氣類型</h3>
+            <h3 className="text-xl font-bold">Weather Type</h3>
             <p className="text-sm opacity-90">{style.description}</p>
           </div>
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold">{weatherType.type}</div>
-          <div className="text-sm opacity-90">體感溫度</div>
+          <div className="text-sm opacity-90">Feels Like</div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-black bg-opacity-20 rounded-lg p-3">
-          <div className="text-sm opacity-90">體感溫度</div>
+          <div className="text-sm opacity-90">Feels Like</div>
           <div className="text-xl font-bold">{weatherType.heatIndex}°C</div>
         </div>
         <div className="bg-black bg-opacity-20 rounded-lg p-3">
-          <div className="text-sm opacity-90">平均溫度</div>
+          <div className="text-sm opacity-90">Average Temperature</div>
           <div className="text-xl font-bold">{avgTemperature.avgValue}°C</div>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-sm">
         <div className="bg-black bg-opacity-20 rounded-lg p-2 text-center">
-          <div className="opacity-90">最高溫</div>
+          <div className="opacity-90">Max Temp</div>
           <div className="font-bold">{maxTemperature.avgValue}°C</div>
         </div>
         <div className="bg-black bg-opacity-20 rounded-lg p-2 text-center">
-          <div className="opacity-90">最低溫</div>
+          <div className="opacity-90">Min Temp</div>
           <div className="font-bold">{minTemperature.avgValue}°C</div>
         </div>
         <div className="bg-black bg-opacity-20 rounded-lg p-2 text-center">
-          <div className="opacity-90">濕度</div>
+          <div className="opacity-90">Humidity</div>
           <div className="font-bold">{humidity.avgValue}%</div>
         </div>
       </div>
 
       <div className="mt-4 text-xs opacity-80">
-        <p>風速: {windSpeed.avgValue} km/h</p>
+        <p>Wind Speed: {windSpeed.avgValue} km/h</p>
         <p className="mt-1">{weatherType.description}</p>
       </div>
     </div>

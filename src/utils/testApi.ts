@@ -1,29 +1,29 @@
-// API 測試工具
+// API testing tool
 import { weatherApi } from '../services/api';
 
-// 測試 API 連接
+// Test API connection
 export const testApiConnection = async () => {
-  console.log('🔍 測試 API 連接...');
+  console.log('🔍 Testing API connection...');
   
   try {
-    // 測試健康檢查
+    // Test health check
     const health = await weatherApi.checkHealth();
-    console.log('✅ API 健康檢查通過:', health);
+    console.log('✅ API health check passed:', health);
     
-    // 測試 NASA Power API
+    // Test NASA Power API
     const nasaTest = await weatherApi.testNasaApi();
-    console.log('✅ NASA Power API 測試通過:', nasaTest);
+    console.log('✅ NASA Power API test passed:', nasaTest);
     
     return true;
   } catch (error) {
-    console.error('❌ API 測試失敗:', error);
+    console.error('❌ API test failed:', error);
     return false;
   }
 };
 
-// 在開發環境中自動運行測試
-if (import.meta.env.DEV) {
-  // 延遲 2 秒後運行測試，確保應用程式已載入
+// Automatically run tests in development environment (disabled to reduce load)
+if (import.meta.env.DEV && false) { // Disabled to prevent API overload
+  // Run test after 2 seconds delay to ensure app is loaded
   setTimeout(() => {
     testApiConnection();
   }, 2000);

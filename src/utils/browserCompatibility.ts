@@ -1,46 +1,46 @@
-// 瀏覽器兼容性工具
+// Browser compatibility utility
 export class BrowserCompatibility {
-  // 檢查是否支援 AbortController
+  // Check if AbortController is supported
   static supportsAbortController(): boolean {
     return typeof AbortController !== 'undefined';
   }
 
-  // 檢查是否支援 fetch
+  // Check if fetch is supported
   static supportsFetch(): boolean {
     return typeof fetch !== 'undefined';
   }
 
-  // 檢查是否支援 Promise
+  // Check if Promise is supported
   static supportsPromise(): boolean {
     return typeof Promise !== 'undefined';
   }
 
-  // 創建兼容的 fetch 請求
+  // Create compatible fetch request
   static createFetchRequest(url: string, options: RequestInit = {}): Promise<Response> {
     if (!this.supportsFetch()) {
-      throw new Error('此瀏覽器不支援 fetch API，請使用現代瀏覽器');
+      throw new Error('This browser does not support fetch API, please use a modern browser');
     }
 
     if (!this.supportsAbortController() && options.signal) {
-      // 如果不支援 AbortController，移除 signal 選項
+      // If AbortController is not supported, remove signal option
       const { signal, ...optionsWithoutSignal } = options;
-      console.warn('此瀏覽器不支援 AbortController，將無法取消請求');
+      console.warn('This browser does not support AbortController, requests cannot be cancelled');
       return fetch(url, optionsWithoutSignal);
     }
 
     return fetch(url, options);
   }
 
-  // 創建兼容的超時處理
+  // Create compatible timeout handling
   static createTimeoutPromise(timeoutMs: number): Promise<never> {
     return new Promise((_, reject) => {
       setTimeout(() => {
-        reject(new Error('請求超時'));
+        reject(new Error('Request timeout'));
       }, timeoutMs);
     });
   }
 
-  // 檢查瀏覽器類型
+  // Check browser type
   static getBrowserInfo(): { name: string; version: string; isModern: boolean } {
     const userAgent = navigator.userAgent;
     let name = 'Unknown';
@@ -72,22 +72,22 @@ export class BrowserCompatibility {
     return { name, version, isModern };
   }
 
-  // 顯示瀏覽器兼容性警告
+  // Show browser compatibility warning
   static showCompatibilityWarning(): void {
     const browserInfo = this.getBrowserInfo();
     
     if (!this.supportsFetch() || !this.supportsPromise()) {
-      console.error('❌ 此瀏覽器不支援必要的 Web API，請升級到現代瀏覽器');
+      console.error('❌ This browser does not support required Web APIs, please upgrade to a modern browser');
       return;
     }
 
     if (!browserInfo.isModern) {
-      console.warn(`⚠️ 您正在使用 ${browserInfo.name} ${browserInfo.version}，建議升級到最新版本以獲得最佳體驗`);
+      console.warn(`⚠️ You are using ${browserInfo.name} ${browserInfo.version}, it is recommended to upgrade to the latest version for the best experience`);
     } else {
-      console.log(`✅ 瀏覽器兼容性檢查通過：${browserInfo.name} ${browserInfo.version}`);
+      console.log(`✅ Browser compatibility check passed: ${browserInfo.name} ${browserInfo.version}`);
     }
   }
 }
 
-// 在模組載入時檢查兼容性
+// Check compatibility when module loads
 BrowserCompatibility.showCompatibilityWarning();
