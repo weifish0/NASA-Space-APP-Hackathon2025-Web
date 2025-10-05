@@ -2,9 +2,21 @@ import type { WeatherApiResponse, Location } from '../types';
 import { BrowserCompatibility } from '../utils/browserCompatibility';
 
 // ✅ 統一 Base URL：優先用環境變數，其次依環境判斷
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_BASE_URL ||
-  (import.meta.env.PROD ? 'https://huei-ying-oh.zeabur.app' : 'http://localhost:8000');
+const API_BASE_URL = (() => {
+  // 優先使用環境變數
+  if (import.meta.env.VITE_API_BASE_URL) {
+    
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  
+  // 生產環境使用 HTTPS API
+  if (import.meta.env.PROD) {
+    return 'https://huei-ying-oh.zeabur.app';
+  }
+  
+  // 開發環境使用本地 API
+  return 'http://localhost:8000';
+})();
 
 // API 錯誤類型
 export interface ApiError {
@@ -208,9 +220,15 @@ export const fetchWeatherData = async (
   params.set('years', String(trendYears));
   params.set('trend_years', String(trendYears)); // ✅ 關鍵
 
-  const res = await fetch(
-    `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}/api/v1/weather/analysis?${params.toString()}`
-  );
+  const apiUrl = `${API_BASE_URL}/api/v1/weather/analysis?${params.toString()}`;
+  
+  // 調試信息
+  console.log('🌐 API 請求 URL:', apiUrl);
+  console.log('🔧 環境變數 VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+  console.log('🔧 環境變數 PROD:', import.meta.env.PROD);
+  console.log('🔧 最終 API_BASE_URL:', API_BASE_URL);
+
+  const res = await fetch(apiUrl);
   if (!res.ok) throw new Error(`API error (${res.status})`);
   return res.json();
 };

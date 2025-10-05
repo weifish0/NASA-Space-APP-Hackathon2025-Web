@@ -1,0 +1,5 @@
+{
+  "env": {
+    "VITE_API_BASE_URL": "https://huei-ying-oh.zeabur.app"
+  }
+}
