@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import LocationSelector from './components/LocationSelector';
 import AnalysisDashboard from './components/AnalysisDashboard';
 import FloatingWeatherAssistant from './components/FloatingWeatherAssistant';
-import ApiStatusIndicator from './components/ApiStatusIndicator';
 import type { Location, WeatherApiResponse } from './types';
-import { fetchWeatherData, weatherApi } from './services/api';
+import { fetchWeatherData } from './services/api';
 import './utils/browserTest'; // Import browser compatibility test
 import './utils/apiTest'; // Import API connection test
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -18,7 +17,26 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMapFixed, setIsMapFixed] = useState(false);
-  const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [isNavHidden, setIsNavHidden] = useState(false);
+  const lastScrollYRef = useRef(0);
+  useEffect(() => {
+    const THRESHOLD = 4; // px
+    const handleScroll = () => {
+      const currentY = window.scrollY || window.pageYOffset;
+      const delta = currentY - lastScrollYRef.current;
+      if (currentY > 60 && delta > THRESHOLD) {
+        setIsNavHidden(true);
+      } else if (delta < -THRESHOLD || currentY <= 60) {
+        setIsNavHidden(false);
+      }
+      lastScrollYRef.current = currentY;
+    };
+    // 初始同步一次，避免載入時位置不在頂部
+    lastScrollYRef.current = window.scrollY || window.pageYOffset;
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const [trendYears, setTrendYears] = useState<number>(5);
 
   // Set default date to today
@@ -28,20 +46,7 @@ const App: React.FC = () => {
     setEndDate(today);
   }, []);
 
-  // Check API connection status
-  useEffect(() => {
-    const checkApiStatus = async () => {
-      try {
-        await weatherApi.checkHealth();
-        setApiStatus('connected');
-      } catch (error) {
-        setApiStatus('error');
-        console.error('API connection failed:', error);
-      }
-    };
-
-    checkApiStatus();
-  }, []);
+  
 
   // Handle location selection
   const handleLocationSelect = (location: Location) => {
@@ -118,26 +123,33 @@ const App: React.FC = () => {
   }, [selectedLocation, startDate, endDate]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen relative bg-hero-gradient">
+      {/* Subtle noise overlay */}
+      <div className="noise-overlay fixed inset-0 z-0"></div>
       {/* Title area */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <header className={`glass-header sticky top-0 z-10 transition-transform duration-300 will-change-transform ${isNavHidden ? '-translate-y-full' : 'translate-y-0'} transform`}>
+        <div className={`max-w-7xl mx-auto px-4 py-4 transition-all duration-300`}>
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                🌍 Event Horizon Weather
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Weather Risk Analysis Platform - Intelligent Prediction Based on Historical Data
-              </p>
+            <div className="flex items-center gap-3">
+              <a href="/" className="block" title="Go to homepage">
+                <img src="/logo.svg" alt="Logo" className={`h-[60px] w-auto transition-all duration-300`} />
+              </a>
+              <div>
+                <h1 className="text-3xl font-extrabold gradient-text tracking-tight">
+                  Event Horizon Weather
+                </h1>
+                <p className="text-gray-700 mt-1 text-sm">
+                  AI-Driven Risk Assessment for Your Perfect Day
+                </p>
+              </div>
             </div>
-            <ApiStatusIndicator />
+            {/* API status indicator removed */}
           </div>
         </div>
       </header>
 
       {/* Main content area */}
-      <main className={`relative min-h-screen bg-gray-50 ${isMapFixed ? 'pb-96' : ''}`}>
+      <main className={`relative min-h-screen ${isMapFixed ? 'pb-96' : ''}`}>
         {/* Location selector */}
         <div className="py-8">
           <LocationSelector
@@ -198,33 +210,7 @@ const App: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* API status indicator */}
-        {apiStatus === 'checking' && (
-          <div className="fixed top-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-            <div className="flex items-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span>Checking API connection...</span>
-            </div>
-          </div>
-        )}
-
-        {apiStatus === 'error' && (
-          <div className="fixed top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-            <div className="flex items-center gap-2">
-              <span>⚠️</span>
-              <span>API connection failed, please check backend service</span>
-            </div>
-          </div>
-        )}
-
-        {apiStatus === 'connected' && (
-          <div className="fixed top-4 left-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-            <div className="flex items-center gap-2">
-              <span>✅</span>
-              <span>API connection normal</span>
-            </div>
-          </div>
-        )}
+        {/* API status indicator removed */}
 
         {/* Error message */}
         {error && (
@@ -244,19 +230,23 @@ const App: React.FC = () => {
 
         {/* Analysis dashboard */}
         {weatherData && !loading && (
-          <div className="fixed inset-0 bg-white z-40 overflow-y-auto">
+          <div className="fixed inset-0 z-40 overflow-y-auto">
             <div className="relative">
               {/* Close button */}
               <button
                 onClick={() => setWeatherData(null)}
-                className="fixed top-4 right-4 z-50 bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition-colors"
+                className="fixed top-4 right-4 z-50 bg-gray-800/80 text-white p-2 rounded-full hover:bg-gray-700 transition-colors backdrop-blur"
                 title="Close analysis results"
               >
                 ✕
               </button>
               
               {/* Analysis results */}
-              <AnalysisDashboard weatherData={weatherData} />
+              <div className="p-4">
+                <div className="glass-card rounded-2xl">
+                  <AnalysisDashboard weatherData={weatherData} />
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -264,10 +254,10 @@ const App: React.FC = () => {
         {/* Empty state prompt */}
         {!weatherData && !loading && selectedLocation && startDate && (
           <div className="max-w-7xl mx-auto px-6 pb-8">
-            <div className="bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg">
+            <div className="glass-card px-6 py-4 rounded-xl">
               <div className="flex items-center gap-2">
                 <span>📍</span>
-                <span>Location and date selected, analyzing...</span>
+                <span className="text-gray-800">Location and date selected, analyzing...</span>
               </div>
             </div>
           </div>
@@ -276,10 +266,10 @@ const App: React.FC = () => {
         {/* Initial prompt */}
         {!selectedLocation && (
           <div className="max-w-7xl mx-auto px-6 pb-8">
-            <div className="bg-gray-800 text-white px-6 py-4 rounded-lg shadow-lg">
+            <div className="glass-card px-6 py-4 rounded-xl">
               <div className="flex items-center gap-2">
                 <span>👆</span>
-                <span>Please click on the map or search to select a location</span>
+                <span className="text-gray-800">Please click on the map or search to select a location</span>
               </div>
             </div>
           </div>
@@ -295,14 +285,16 @@ const App: React.FC = () => {
       )}
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8 mt-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-gray-400">
-            Event Horizon Weather - NASA Space App Challenge 2025
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Intelligent risk analysis platform based on historical weather data
-          </p>
+      <footer className="mt-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="glass-card rounded-2xl p-6 text-center">
+            <p className="text-gray-700">
+              Event Horizon Weather - NASA Space App Challenge 2025
+            </p>
+            <p className="text-sm text-gray-500 mt-1">
+              made by Will Cheng and David Chung
+            </p>
+          </div>
         </div>
       </footer>
     </div>
