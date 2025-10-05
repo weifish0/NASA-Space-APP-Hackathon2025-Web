@@ -4,7 +4,7 @@ import { BrowserCompatibility } from '../utils/browserCompatibility';
 // ✅ 統一 Base URL：優先用環境變數，其次依環境判斷
 const API_BASE_URL =
   (import.meta as any).env?.VITE_API_BASE_URL ||
-  (import.meta.env.PROD ? 'https://your-production-api.com' : 'http://localhost:8000');
+  (import.meta.env.PROD ? 'https://huei-ying-oh.zeabur.app' : 'http://localhost:8000');
 
 // API 錯誤類型
 export interface ApiError {
