@@ -81,6 +81,8 @@ const App: React.FC = () => {
     // Validate date range
     if (endDate && new Date(startDate) > new Date(endDate)) {
       setError('Start date cannot be later than end date');
+      // 重置地圖固定狀態，避免錯誤彈出時地圖吸附到底部
+      window.dispatchEvent(new Event('reset-map-position'));
       return;
     }
 
@@ -121,6 +123,13 @@ const App: React.FC = () => {
       fetchData();
     }
   }, [selectedLocation, startDate, endDate]);
+
+  // When analysis opens, ensure map is not fixed to avoid overlay being blocked
+  useEffect(() => {
+    if (weatherData) {
+      window.dispatchEvent(new Event('reset-map-position'));
+    }
+  }, [weatherData]);
 
   return (
     <div className="min-h-screen relative bg-hero-gradient">
@@ -253,7 +262,7 @@ const App: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
-              className="fixed inset-0 z-50 bg-black/90 backdrop-blur-lg overflow-y-auto"
+              className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-lg overflow-y-auto"
             >
               {/* 關閉按鈕 */}
               <button

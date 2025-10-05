@@ -694,7 +694,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             id="fixed-map"
             className={`card-modern overflow-hidden ${isMapFixed
               ? 'fixed bottom-0 left-0 right-0 z-40 mx-0 rounded-t-2xl'
-              : 'relative'
+              : 'relative z-0'
               }`}
           >
             <div className="p-4 border-b border-white/25 flex items-center justify-between bg-white/15 backdrop-blur-xl">
