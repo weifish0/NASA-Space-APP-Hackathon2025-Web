@@ -257,7 +257,13 @@ const App: React.FC = () => {
             >
               {/* 關閉按鈕 */}
               <button
-                onClick={() => setWeatherData(null)}
+                onClick={() => {
+                  setWeatherData(null);
+                  // 通知地圖恢復初始位置（解除固定）
+                  window.dispatchEvent(new Event('reset-map-position'));
+                  // 平滑捲動至頂部，回到初始可視範圍
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
                 className="absolute top-6 right-6 bg-yellow-300/20 border border-yellow-200/30 hover:bg-yellow-300/30 text-yellow-100 p-2 rounded-full z-50 transition-all"
               >
                 ✕

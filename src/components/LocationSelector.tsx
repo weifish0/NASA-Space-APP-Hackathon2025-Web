@@ -250,6 +250,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     }
   }, [isAutoLocating]);
 
+  // Listen external reset event to restore map to initial (not fixed) position
+  useEffect(() => {
+    const handler = () => setIsMapFixed(false);
+    window.addEventListener('reset-map-position', handler as EventListener);
+    return () => window.removeEventListener('reset-map-position', handler as EventListener);
+  }, []);
+
   // Get current location using browser geolocation
   const getCurrentLocation = (showConfirm: boolean = true) => {
     if (!navigator.geolocation) {
