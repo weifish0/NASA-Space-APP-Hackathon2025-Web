@@ -12,6 +12,45 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Map style options
+const MAP_STYLES = [
+  {
+    id: 'osm',
+    name: 'Standard Map',
+    icon: '🗺️',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  },
+  {
+    id: 'carto-light',
+    name: 'Light Theme',
+    icon: '☀️',
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  },
+  {
+    id: 'carto-dark',
+    name: 'Dark Theme',
+    icon: '🌙',
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  },
+  {
+    id: 'satellite',
+    name: 'Satellite View',
+    icon: '🛰️',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  },
+  {
+    id: 'terrain',
+    name: 'Terrain Map',
+    icon: '🏔️',
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+  }
+];
+
 interface LocationSelectorProps {
   onLocationSelect: (location: Location) => void;
   onStartDateSelect: (date: string) => void;
@@ -23,6 +62,141 @@ interface LocationSelectorProps {
   onTrendYearsChange: (years: number) => void;
   trendYears: number;
 }
+
+// Create custom marker icon
+const createCustomIcon = (color: string = '#3B82F6', isPending: boolean = false) => {
+  const animation = isPending ? 'pulse-pending 1.5s infinite' : 'pulse 2s infinite';
+  
+  if (isPending) {
+    // 圖釘樣式的待確認標記
+    const html = `
+      <div style="
+        position: relative;
+        width: 32px;
+        height: 32px;
+        animation: ${animation};
+      ">
+        <div style="
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-top: 12px solid ${color};
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        "></div>
+        <div style="
+          position: absolute;
+          bottom: 8px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 16px;
+          height: 16px;
+          background: ${color};
+          border-radius: 50%;
+          border: 3px solid white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          color: white;
+          font-weight: bold;
+        "></div>
+        <div style="
+          position: absolute;
+          bottom: 2px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 8px solid white;
+        "></div>
+      </div>
+    `;
+    
+    return L.divIcon({
+      className: 'custom-marker',
+      html: html,
+      iconSize: [32, 32],
+      iconAnchor: [16, 12]
+    });
+  } else {
+    // 已確認位置標記（保持原樣）
+    const html = `
+      <div style="
+        background: ${color};
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: white;
+        animation: ${animation};
+      ">📍</div>
+    `;
+    
+    return L.divIcon({
+      className: 'custom-marker',
+      html: html,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+  }
+};
+
+// Create user location marker icon
+const createUserLocationIcon = () => {
+  const html = `
+    <div style="
+      position: relative;
+      width: 20px;
+      height: 20px;
+      animation: pulse 2s infinite;
+    ">
+      <div style="
+        background: #10B981;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+      ">👤</div>
+      <div style="
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        border: 2px solid #10B981;
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: pulse-ring 2s infinite;
+      "></div>
+    </div>
+  `;
+  
+  return L.divIcon({
+    className: 'user-location-marker',
+    html: html,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
+  });
+};
 
 // Map click event handler component
 const MapClickHandler: React.FC<{ onLocationSelect: (location: Location) => void }> = ({ onLocationSelect }) => {
@@ -47,8 +221,16 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   trendYears
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [mapCenter, setMapCenter] = useState<[number, number]>([25.0330, 121.5654]); // Taipei
+  const [mapCenter, setMapCenter] = useState<[number, number]>([25.0330, 121.5654]); // Default to Taipei
   const [isMapFixed, setIsMapFixed] = useState(false);
+  const [mapStyle, setMapStyle] = useState(MAP_STYLES[0]); // Default to OSM
+  const [isMapLoading, setIsMapLoading] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [isAutoLocating, setIsAutoLocating] = useState(true); // Auto-locate on page load
+  const [userLocation, setUserLocation] = useState<Location | null>(null); // User's current location
+  const [pendingLocation, setPendingLocation] = useState<Location | null>(null);
+  const [pendingAddress, setPendingAddress] = useState<string>('');
+  const [showLocationConfirm, setShowLocationConfirm] = useState(false);
   const mapRef = useRef<L.Map>(null);
 
   // Notify parent component of map fixed state change
@@ -56,10 +238,117 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     onMapFixedChange?.(isMapFixed);
   }, [isMapFixed, onMapFixedChange]);
 
+  // Auto-locate user on page load
+  useEffect(() => {
+    if (isAutoLocating) {
+      getCurrentLocation(false); // Don't show confirmation dialog for auto-location
+      setIsAutoLocating(false);
+    }
+  }, [isAutoLocating]);
+
+  // Get current location using browser geolocation
+  const getCurrentLocation = (showConfirm: boolean = true) => {
+    if (!navigator.geolocation) {
+      if (showConfirm) {
+        alert('Geolocation is not supported by this browser.');
+      }
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        const location = { lat: latitude, lon: longitude };
+        
+        // Save user's current location
+        setUserLocation(location);
+        
+        // Move map to current location
+        setMapCenter([latitude, longitude]);
+        if (mapRef.current) {
+          mapRef.current.setView([latitude, longitude], 15);
+        }
+        
+        if (showConfirm) {
+          // Get address from coordinates for confirmation
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+            );
+            const data = await response.json();
+            const address = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            
+            setPendingLocation(location);
+            setPendingAddress(address);
+            setShowLocationConfirm(true);
+          } catch (error) {
+            console.error('Error getting address:', error);
+            setPendingLocation(location);
+            setPendingAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            setShowLocationConfirm(true);
+          }
+        }
+        
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        if (showConfirm) {
+          let errorMessage = 'Unable to retrieve your location.';
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location access denied by user.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information is unavailable.';
+              break;
+            case error.TIMEOUT:
+              errorMessage = 'Location request timed out.';
+              break;
+          }
+          alert(errorMessage);
+        }
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      }
+    );
+  };
+
+  // Confirm location selection
+  const confirmLocationSelection = () => {
+    if (pendingLocation) {
+      onLocationSelect(pendingLocation);
+      setShowLocationConfirm(false);
+      setPendingLocation(null);
+      setPendingAddress('');
+      setIsMapFixed(true);
+      
+      setTimeout(() => {
+        const mapElement = document.getElementById('fixed-map');
+        if (mapElement) {
+          mapElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+      }, 100);
+    }
+  };
+
+  // Cancel location selection
+  const cancelLocationSelection = () => {
+    setShowLocationConfirm(false);
+    setPendingLocation(null);
+    setPendingAddress('');
+  };
+
   // Handle search
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
+    setIsMapLoading(true);
     try {
       // Use Nominatim API for geocoding
       const response = await fetch(
@@ -91,6 +380,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       }
     } catch (error) {
       console.error('Error searching location:', error);
+    } finally {
+      setIsMapLoading(false);
     }
   };
 
@@ -116,17 +407,38 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     setIsMapFixed(false);
   };
 
-  // Handle map click
-  const handleMapClick = (location: Location) => {
-    onLocationSelect(location);
-    if (!isMapFixed) {
-      setIsMapFixed(true);
-      setTimeout(() => {
-        const mapElement = document.getElementById('fixed-map');
-        if (mapElement) {
-          mapElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
-      }, 100);
+  // Handle map click - show confirmation instead of immediate selection
+  const handleMapClick = async (location: Location) => {
+    // Move map to clicked location
+    setMapCenter([location.lat, location.lon]);
+    if (mapRef.current) {
+      mapRef.current.setView([location.lat, location.lon], 15);
+    }
+    
+    // Get address from coordinates
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lon}&addressdetails=1`
+      );
+      const data = await response.json();
+      const address = data.display_name || `${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}`;
+      
+      setPendingLocation(location);
+      setPendingAddress(address);
+      setShowLocationConfirm(true);
+    } catch (error) {
+      console.error('Error getting address:', error);
+      setPendingLocation(location);
+      setPendingAddress(`${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}`);
+      setShowLocationConfirm(true);
+    }
+  };
+
+  // Handle map style change
+  const handleMapStyleChange = (styleId: string) => {
+    const style = MAP_STYLES.find(s => s.id === styleId);
+    if (style) {
+      setMapStyle(style);
     }
   };
 
@@ -134,21 +446,27 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     <div className="w-full max-w-7xl mx-auto p-6">
       {/* Title and description */}
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
           🌍 Select Analysis Location
         </h2>
-        <p className="text-gray-600">
-          Click on the map or search to select the location for weather risk analysis
+        <p className="text-gray-600 text-lg">
+          Click on the map, search, or use your current location to select a position for weather risk analysis
         </p>
+        {isLocating && (
+          <div className="mt-4 flex items-center justify-center gap-2 text-blue-600">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            <span className="text-sm">Detecting your location...</span>
+          </div>
+        )}
       </div>
 
       {/* Search and date selection area */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div className="card-modern p-6 mb-6">
         <div className="flex flex-col lg:flex-row gap-4 items-center">
           <div className="flex-1 flex gap-3">
             <div className="flex-1">
-              <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-2">
-                Search Location
+              <label htmlFor="search-input" className="block text-sm font-semibold text-gray-700 mb-2">
+                🔍 Search Location
               </label>
               <input
                 id="search-input"
@@ -157,34 +475,43 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Enter city name or address..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="search-input"
               />
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <button
                 onClick={handleSearch}
-                className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                disabled={isMapLoading}
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                🔍 Search
+                {isMapLoading ? '⏳ Searching...' : '🔍 Search'}
+              </button>
+              <button
+                onClick={() => getCurrentLocation(true)}
+                disabled={isLocating}
+                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Use current location"
+              >
+                {isLocating ? '⏳ Locating...' : '📍 Current Location'}
               </button>
             </div>
           </div>
           <div className="flex flex-col lg:flex-row items-center gap-3">
             <div>
-              <label htmlFor="start-date-picker" className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date
+              <label htmlFor="start-date-picker" className="block text-sm font-semibold text-gray-700 mb-2">
+                📅 Start Date
               </label>
               <input
                 id="start-date-picker"
                 type="date"
                 value={startDate || ''}
                 onChange={handleStartDateChange}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               />
             </div>
             <div>
-              <label htmlFor="end-date-picker" className="block text-sm font-medium text-gray-700 mb-2">
-                End Date
+              <label htmlFor="end-date-picker" className="block text-sm font-semibold text-gray-700 mb-2">
+                📅 End Date
               </label>
               <input
                 id="end-date-picker"
@@ -192,25 +519,47 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                 value={endDate || ''}
                 onChange={handleEndDateChange}
                 min={startDate}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               />
             </div>
           </div>
         </div>
 
-        {/* ✅ Historical years selection, dropdown version */}
+        {/* Map style selector */}
+        <div className="mt-6">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
+            🎨 Map Style
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {MAP_STYLES.map((style) => (
+              <button
+                key={style.id}
+                onClick={() => handleMapStyleChange(style.id)}
+                className={`map-style-btn ${
+                  mapStyle.id === style.id ? 'active' : 'inactive'
+                }`}
+              >
+                <span className="mr-2">{style.icon}</span>
+                <span className="hidden sm:inline">{style.name}</span>
+                <span className="sm:hidden">{style.icon}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Historical years selection */}
         <div className="mt-4 text-center">
           <label
             htmlFor="trend-years-select"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-semibold text-gray-700 mb-2"
           >
-            Historical Years
+            📊 Historical Analysis Period
           </label>
           <select
             id="trend-years-select"
             value={trendYears}
             onChange={(e) => onTrendYearsChange(parseInt(e.target.value))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            className="px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white transition-all duration-200"
           >
             {[1, 3, 5, 10, 15, 20, 25, 30].map((year) => (
               <option key={year} value={year}>
@@ -218,25 +567,25 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
               </option>
             ))}
           </select>
-          <div className="text-xs text-gray-500 mt-1">
-            Currently analyzing trends for the past <span className="font-semibold text-blue-600">{trendYears}</span> years
+          <div className="text-sm text-gray-600 mt-2">
+            Currently analyzing trends for the past <span className="font-bold text-blue-600">{trendYears}</span> years
           </div>
         </div>
         
         {/* Selected location and date information */}
         {selectedLocation && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex flex-col gap-2">
+          <div className="mt-6 p-4 card-gradient">
+            <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-blue-600">📍</span>
-                <span className="text-sm font-medium text-blue-800">
+                <span className="text-2xl">📍</span>
+                <span className="text-sm font-semibold text-blue-800">
                   Selected location: Latitude {selectedLocation.lat.toFixed(4)}, Longitude {selectedLocation.lon.toFixed(4)}
                 </span>
               </div>
               {startDate && (
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-600">📅</span>
-                  <span className="text-sm font-medium text-blue-800">
+                  <span className="text-2xl">📅</span>
+                  <span className="text-sm font-semibold text-blue-800">
                     Analysis period: {startDate} {endDate && endDate !== startDate ? `to ${endDate}` : ''}
                   </span>
                 </div>
@@ -246,31 +595,36 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         )}
       </div>
 
-      {/* Map area - determine if fixed based on state */}
+      {/* Map area */}
       <div 
         id="fixed-map"
-        className={`bg-white rounded-lg shadow-md overflow-hidden ${
+        className={`card-modern overflow-hidden ${
           isMapFixed 
-            ? 'fixed bottom-0 left-0 right-0 z-40 mx-0 rounded-t-lg' 
+            ? 'fixed bottom-0 left-0 right-0 z-40 mx-0 rounded-t-2xl' 
             : 'relative'
         }`}
       >
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
             🗺️ Interactive Map
             <span className="text-sm font-normal text-gray-500">
-              (Click anywhere on the map to select a location)
+              (Click anywhere on the map to select analysis location)
             </span>
           </h3>
-          {isMapFixed && (
-            <button
-              onClick={resetMapPosition}
-              className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
-              title="Reset map position"
-            >
-              ↕️ Reset Position
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">
+              Style: {mapStyle.icon} {mapStyle.name}
+            </span>
+            {isMapFixed && (
+              <button
+                onClick={resetMapPosition}
+                className="btn-secondary"
+                title="Reset map position"
+              >
+                ↕️ Reset Position
+              </button>
+            )}
+          </div>
         </div>
         <div 
           className="relative" 
@@ -279,23 +633,50 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
             maxHeight: isMapFixed ? '500px' : 'none'
           }}
         >
+          {isMapLoading && (
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+              <div className="flex flex-col items-center gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <span className="text-sm text-gray-600">Loading map...</span>
+              </div>
+            </div>
+          )}
           <MapContainer
             center={mapCenter}
             zoom={13}
-            className="w-full h-full rounded-b-lg"
+            className="w-full h-full rounded-b-2xl"
             ref={mapRef}
           >
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution={mapStyle.attribution}
+              url={mapStyle.url}
             />
             
             {/* Map click handler */}
             <MapClickHandler onLocationSelect={handleMapClick} />
             
-            {/* Selected location marker */}
+            {/* User's current location marker */}
+            {userLocation && (
+              <Marker 
+                position={[userLocation.lat, userLocation.lon]}
+                icon={createUserLocationIcon()}
+              />
+            )}
+            
+            {/* Selected location marker with custom icon */}
             {selectedLocation && (
-              <Marker position={[selectedLocation.lat, selectedLocation.lon]} />
+              <Marker 
+                position={[selectedLocation.lat, selectedLocation.lon]}
+                icon={createCustomIcon('#3B82F6', false)}
+              />
+            )}
+            
+            {/* Pending location marker (for confirmation) */}
+            {pendingLocation && (
+              <Marker 
+                position={[pendingLocation.lat, pendingLocation.lon]}
+                icon={createCustomIcon('#F59E0B', true)}
+              />
             )}
           </MapContainer>
         </div>
@@ -303,18 +684,100 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
       {/* Usage tips - hidden when map is fixed */}
       {!isMapFixed && (
-        <div className="mt-6 bg-gray-50 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <div className="text-blue-500 text-xl">💡</div>
+        <div className="mt-6 card-gradient p-6">
+          <div className="flex items-start gap-4">
+            <div className="text-3xl">💡</div>
             <div>
-              <h4 className="font-medium text-gray-800 mb-1">Usage Tips</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Click anywhere on the map to select an analysis location</li>
-                <li>• Use the search box to enter city name or address for quick positioning</li>
-                <li>• Select the date range you want to analyze (start date and end date)</li>
-                <li>• If only start date is selected, single-day data will be analyzed</li>
-                <li>• After selection, the system will automatically load historical weather data for that location</li>
+              <h4 className="font-bold text-gray-800 mb-3 text-lg">Usage Tips</h4>
+              <ul className="text-sm text-gray-700 space-y-2">
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-500">•</span>
+                  Click anywhere on the map to select an analysis location
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-500">•</span>
+                  Use the search box to enter city name or address for quick positioning
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-500">•</span>
+                  Use the "Current Location" button to automatically detect your position
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-500">•</span>
+                  Select the date range you want to analyze (start date and end date)
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-500">•</span>
+                  If only start date is selected, single-day data will be analyzed
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-blue-500">•</span>
+                  After selection, the system will automatically load historical weather data for that location
+                </li>
               </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Location confirmation modal - with backdrop and highest z-index */}
+      {showLocationConfirm && pendingLocation && (
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-4">
+          {/* Backdrop overlay */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+            onClick={cancelLocationSelection}
+          ></div>
+          
+          {/* Modal content */}
+          <div className="relative z-[10000] max-w-md w-full mx-4">
+            <div className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-200 animate-slide-down relative">
+              {/* Close button */}
+              <button
+                onClick={cancelLocationSelection}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                title="Close"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
+              <div className="text-center">
+                <div className="text-4xl mb-4">📍</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-4">
+                  Confirm Location Selection
+                </h3>
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <div className="text-sm text-gray-600 mb-2">
+                    <strong>Coordinates:</strong>
+                  </div>
+                  <div className="text-sm font-mono text-gray-800">
+                    Latitude: {pendingLocation.lat.toFixed(6)}<br />
+                    Longitude: {pendingLocation.lon.toFixed(6)}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-3">
+                    <strong>Address:</strong>
+                  </div>
+                  <div className="text-sm text-gray-800 mt-1 max-h-20 overflow-y-auto">
+                    {pendingAddress}
+                  </div>
+                </div>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={cancelLocationSelection}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmLocationSelection}
+                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-colors font-medium"
+                  >
+                    Confirm Selection
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
