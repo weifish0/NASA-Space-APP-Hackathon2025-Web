@@ -18,17 +18,18 @@ export interface WeatherAssistantResponse {
 // ✅ Unified Base URL: prioritize environment variables, then determine by environment
 const API_BASE_URL = (() => {
   // Prioritize environment variables
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-  
-  // Production environment uses HTTPS API
+  // 1) 若使用 Vercel rewrite，前端可走同源 /api 以避開 CORS
   if (import.meta.env.PROD) {
-    return 'https://huei-ying-oh.zeabur.app';
+    return '';
   }
-  
-  // Development environment uses local API
-  return 'http://localhost:8000';
+
+  // 2) 開發環境可直接打本機後端
+  if (import.meta.env.DEV) {
+    return 'http://localhost:8000';
+  }
+
+  // 3) fallback（非必要時不會走到）
+  return '';
 })();
 
 // Weather assistant API service
@@ -47,7 +48,10 @@ export class WeatherAssistantService {
   async askQuestion(request: WeatherAssistantRequest): Promise<WeatherAssistantResponse> {
     // ⚠️ 注意：後端 /api/v1/weather/assistant 端點必須能接收這個 WeatherAssistantRequest 格式的 JSON Body
     try {
-      const response = await fetch(`${this.baseUrl}/api/v1/weather/assistant`, {
+      const url = this.baseUrl
+        ? `${this.baseUrl}/api/v1/weather/assistant`
+        : `/api/v1/weather/assistant`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

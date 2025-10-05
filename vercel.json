@@ -1,5 +1,11 @@
 {
   "env": {
     "VITE_API_BASE_URL": "https://huei-ying-oh.zeabur.app"
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/v1/weather/assistant",
+      "destination": "https://huei-ying-oh.zeabur.app/api/v1/weather/assistant"
+    }
+  ]
 }
