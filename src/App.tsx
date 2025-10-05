@@ -5,6 +5,9 @@ import type { Location, WeatherApiResponse } from './types';
 import { fetchWeatherData, weatherApi } from './services/api';
 import './utils/browserTest'; // 導入瀏覽器兼容性測試
 import './utils/apiTest'; // 導入 API 連接測試
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 const App: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -145,17 +148,49 @@ const App: React.FC = () => {
         </div>
 
         {/* 載入狀態 */}
-        {loading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 flex items-center gap-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <div className="flex flex-col">
-                <span className="text-lg font-medium">正在分析天氣數據...</span>
-                <span className="text-sm text-gray-500">從 NASA Power API 獲取歷史數據</span>
-              </div>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              key="loading-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-white/30"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="rounded-2xl bg-white/70 shadow-2xl p-10 flex flex-col items-center text-center space-y-5 w-[360px] border border-white/40"
+              >
+                {/* ✅ Lottie Animation */}
+                <DotLottieReact
+                  src="https://lottie.host/96252d88-e7d1-4469-87b6-1108d06adfcf/ENEvYo8zvt.lottie"
+                  loop
+                  autoplay
+                  style={{ width: 300, height: 300 }}
+                />
+
+                {/* ✅ Loading Text */}
+                <div className="flex flex-col">
+                  <span className="text-lg font-semibold text-gray-800 tracking-wide">
+                    正在分析天氣數據...
+                  </span>
+                  <span className="text-sm text-gray-600">
+                    從 NASA Power API 獲取歷史數據
+                  </span>
+                </div>
+
+                {/* ✅ 小進度條動畫 */}
+                <div className="w-3/4 h-1.5 bg-gray-200 rounded-full overflow-hidden relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 animate-loading-bar"></div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* API 狀態指示器 */}
         {apiStatus === 'checking' && (
