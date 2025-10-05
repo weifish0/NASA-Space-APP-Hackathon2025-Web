@@ -45,7 +45,7 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
         <ProbabilityCard
           title="Precipitation Probability"
           value={`${summary.precipitation.probability}${summary.precipitation.unit}`}
-          probability={`${summary.precipitation.probability}% `}
+          probability={`${summary.precipitation.probability}%`}
           icon="🌧️"
         />
         <ProbabilityCard
