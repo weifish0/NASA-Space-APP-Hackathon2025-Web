@@ -128,6 +128,8 @@ const App: React.FC = () => {
   useEffect(() => {
     if (weatherData) {
       window.dispatchEvent(new Event('reset-map-position'));
+      // 進入分析頁時，自動捲到最上方，避免頂部被切掉
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [weatherData]);
 
