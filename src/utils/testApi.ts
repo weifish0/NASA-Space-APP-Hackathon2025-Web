@@ -14,15 +14,6 @@ export const testApiConnection = async () => {
     const nasaTest = await weatherApi.testNasaApi();
     console.log('✅ NASA Power API 測試通過:', nasaTest);
     
-    // 測試天氣分析（使用台北市作為測試）
-    const weatherData = await weatherApi.getWeatherAnalysis({
-      lat: 25.0330,
-      lon: 121.5654,
-      start_date: '20240115',
-      years: 3
-    });
-    console.log('✅ 天氣分析測試通過:', weatherData);
-    
     return true;
   } catch (error) {
     console.error('❌ API 測試失敗:', error);
