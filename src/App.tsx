@@ -16,7 +16,7 @@ const App: React.FC = () => {
   const [weatherData, setWeatherData] = useState<WeatherApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isMapFixed, setIsMapFixed] = useState(false);
+  const [_isMapFixed, setIsMapFixed] = useState(false);
   const [isNavHidden, setIsNavHidden] = useState(false);
   const lastScrollYRef = useRef(0);
   useEffect(() => {
