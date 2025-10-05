@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isMapFixed, setIsMapFixed] = useState(false);
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'error'>('checking');
+  const [trendYears, setTrendYears] = useState<number>(20);
 
   // 設置默認日期為今天
   useEffect(() => {
@@ -77,7 +78,7 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      const data = await fetchWeatherData(selectedLocation, startDate, endDate || undefined);
+      const data = await fetchWeatherData(selectedLocation, startDate, endDate || undefined, trendYears);
       setWeatherData(data);
     } catch (err) {
       let errorMessage = '獲取天氣數據時發生錯誤，請稍後再試';
@@ -137,6 +138,8 @@ const App: React.FC = () => {
             startDate={startDate}
             endDate={endDate}
             onMapFixedChange={handleMapFixedChange}
+            onTrendYearsChange={setTrendYears}
+            trendYears={trendYears}
           />
         </div>
 

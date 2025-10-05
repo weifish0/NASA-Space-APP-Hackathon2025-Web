@@ -20,6 +20,8 @@ interface LocationSelectorProps {
   startDate?: string;
   endDate?: string;
   onMapFixedChange?: (isFixed: boolean) => void;
+  onTrendYearsChange: (years: number) => void;
+  trendYears: number;
 }
 
 // 地圖點擊事件處理組件
@@ -41,6 +43,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   startDate,
   endDate,
   onMapFixedChange,
+  onTrendYearsChange,
+  trendYears
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [mapCenter, setMapCenter] = useState<[number, number]>([25.0330, 121.5654]); // 台北市
@@ -191,6 +195,31 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                 className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+          </div>
+        </div>
+
+        {/* ✅ 歷史年數選擇，下拉式選單版本 */}
+        <div className="mt-4 text-center">
+          <label
+            htmlFor="trend-years-select"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            歷史年數
+          </label>
+          <select
+            id="trend-years-select"
+            value={trendYears}
+            onChange={(e) => onTrendYearsChange(parseInt(e.target.value))}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+          >
+            {[1, 3, 5, 10, 15, 20, 25, 30].map((year) => (
+              <option key={year} value={year}>
+                {year} 年
+              </option>
+            ))}
+          </select>
+          <div className="text-xs text-gray-500 mt-1">
+            目前分析過去 <span className="font-semibold text-blue-600">{trendYears}</span> 年的趨勢
           </div>
         </div>
         
