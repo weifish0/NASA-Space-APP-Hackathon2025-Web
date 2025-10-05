@@ -33,25 +33,25 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
         <ProbabilityCard
           title="Average Temperature"
           value={`${summary.avgTemperature.avgValue}${summary.avgTemperature.unit}`}
-          probability={`${Math.round((summary.avgTemperature.avgValue / 40) * 100)}% 機率`}
+          probability={`${Math.round((summary.avgTemperature.avgValue / 40) * 100)}%`}
           icon="🌡️"
         />
         <ProbabilityCard
           title="Maximum Temperature"
           value={`${summary.maxTemperature.avgValue}${summary.maxTemperature.unit}`}
-          probability={`${Math.round((summary.maxTemperature.avgValue / 40) * 100)}% 機率`}
+          probability={`${Math.round((summary.maxTemperature.avgValue / 40) * 100)}%`}
           icon="🔥"
         />
         <ProbabilityCard
           title="Precipitation Probability"
           value={`${summary.precipitation.probability}${summary.precipitation.unit}`}
-          probability={`${summary.precipitation.probability}% 機率`}
+          probability={`${summary.precipitation.probability}% `}
           icon="🌧️"
         />
         <ProbabilityCard
           title="Average Wind Speed"
           value={`${summary.windSpeed.avgValue}${summary.windSpeed.unit}`}
-          probability={`${Math.round((summary.windSpeed.avgValue / 30) * 100)}% 機率`}
+          probability={`${Math.round((summary.windSpeed.avgValue / 30) * 100)}%`}
           icon="💨"
         />
       </div>
@@ -61,13 +61,13 @@ const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ weatherData }) =>
         <ProbabilityCard
           title="Minimum Temperature"
           value={`${summary.minTemperature.avgValue}${summary.minTemperature.unit}`}
-          probability={`${Math.round((summary.minTemperature.avgValue / 30) * 100)}% 機率`}
+          probability={`${Math.round((summary.minTemperature.avgValue / 30) * 100)}%`}
           icon="❄️"
         />
         <ProbabilityCard
           title="Relative Humidity"
           value={`${summary.humidity.avgValue}${summary.humidity.unit}`}
-          probability={`${Math.round((summary.humidity.avgValue / 100) * 100)}% 機率`}
+          probability={`${Math.round((summary.humidity.avgValue / 100) * 100)}%`}
           icon="💧"
         />
       </div>

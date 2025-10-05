@@ -153,20 +153,6 @@ const App: React.FC = () => {
           />
         </div>
 
-<<<<<<< HEAD
-        {/* 載入狀態 */}
-        {loading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 flex items-center gap-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <div className="flex flex-col">
-                <span className="text-lg font-medium">正在分析天氣數據...</span>
-                <span className="text-sm text-gray-500">從 NASA Power API 獲取歷史數據</span>
-              </div>
-            </div>
-          </div>
-        )}
-=======
         {/* Loading state */}
         <AnimatePresence>
           {loading && (
@@ -211,7 +197,6 @@ const App: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
->>>>>>> 8319687 (feat: LLM Chatbot)
 
         {/* API status indicator */}
         {apiStatus === 'checking' && (
