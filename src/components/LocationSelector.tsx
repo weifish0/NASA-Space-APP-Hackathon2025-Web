@@ -370,24 +370,25 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       if (data.length > 0) {
         const { lat, lon } = data[0];
         const location = { lat: parseFloat(lat), lon: parseFloat(lon) };
-        onLocationSelect(location);
+        // Move map to search result (暫不固定，先彈出確認)
         setMapCenter([location.lat, location.lon]);
-
-        // Move map to search result
         if (mapRef.current) {
           mapRef.current.setView([location.lat, location.lon], 13);
         }
 
-        // Fix map to bottom
-        setIsMapFixed(true);
-
-        // Scroll to map position
-        setTimeout(() => {
-          const mapElement = document.getElementById('fixed-map');
-          if (mapElement) {
-            mapElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
-          }
-        }, 100);
+        // 反向地理編碼以取得地址，並顯示確認視窗
+        try {
+          const rev = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lon}&addressdetails=1`);
+          const revData = await rev.json();
+          const address = revData.display_name || `${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}`;
+          setPendingLocation(location);
+          setPendingAddress(address);
+          setShowLocationConfirm(true);
+        } catch (_e) {
+          setPendingLocation(location);
+          setPendingAddress(`${location.lat.toFixed(4)}, ${location.lon.toFixed(4)}`);
+          setShowLocationConfirm(true);
+        }
       }
     } catch (error) {
       console.error('Error searching location:', error);
@@ -440,20 +441,14 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
 
   const handleSelectSuggestion = async (s: { display_name: string; lat: string; lon: string }) => {
     const location = { lat: parseFloat(s.lat), lon: parseFloat(s.lon) };
-    onLocationSelect(location);
+    // 僅更新輸入框與預覽地圖位置，不彈出確認、不觸發分析
     setSearchQuery(s.display_name);
     setSuggestions([]);
     setMapCenter([location.lat, location.lon]);
     if (mapRef.current) {
       mapRef.current.setView([location.lat, location.lon], 13);
     }
-    setIsMapFixed(true);
-    setTimeout(() => {
-      const mapElement = document.getElementById('fixed-map');
-      if (mapElement) {
-        mapElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }
-    }, 100);
+    // 延後到使用者按下 Search 後才開啟確認/分析
   };
 
   // Handle Enter key search
@@ -864,6 +859,18 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                   </div>
                   <div className="text-sm text-gray-800 mt-1 max-h-20 overflow-y-auto">
                     {pendingAddress}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-3">
+                    <strong>Date Range:</strong>
+                  </div>
+                  <div className="text-sm text-gray-800 mt-1">
+                    {startDate || '—'}{endDate ? (endDate !== startDate ? ` → ${endDate}` : '') : ''}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-3">
+                    <strong>Historical Years:</strong>
+                  </div>
+                  <div className="text-sm text-gray-800 mt-1">
+                    {trendYears} years
                   </div>
                 </div>
                 <div className="flex gap-3 justify-center">
